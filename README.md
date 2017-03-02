@@ -57,10 +57,13 @@ In the MobileLabsAutomationFramework folder go to Environment folder and open th
 -	deviceModel
 -	deviceOS
 -	deviceOSVersion
--	testFolder – The folder where the tests are placed. To be selected from the dropdown list. Actual path will be calculated at run-time. 
+-	testFolder – The folder where the tests are placed. To be selected from the dropdown list. Actual path will be created automatically at run-time. 
 -	viewerOrientation
 -	viewerScale
 -	appID
+-	nativeAutomation
+-	addIns - Comma separated for more than one Add-in
+2.	If any additional data is needed then it can be added in the Data worksheet.
 
 ### QTP/UFT setup
 Make sure all absolute paths are removed, i.e. function libraries and object repositories should be referenced by the filename only and not by path. This will help in locating the files in the folders that ExecuteTestSet.vbs will add at run-time.
