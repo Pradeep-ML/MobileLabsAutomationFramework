@@ -9,7 +9,7 @@ This document describes what needs to be done in order to use the automation fra
 1.	QTP 11.0 or later needs to be installed.
 2.	A driver needs to be installed for PostgreSQL ANSI. Follow these steps:
 	* Download the latest 32-bit driver from this link - https://www.postgresql.org/ftp/odbc/versions/msi/
-	* Alternatively you can also install the driver included with the Framework > [Link](../blob/Test/Tools/psqlodbc_x86.msi)	
+	* Alternatively you can also install the driver included with the Framework > [Link](../Test/Tools/psqlodbc_x86.msi)	
 
 ### Device connectivity software
 
