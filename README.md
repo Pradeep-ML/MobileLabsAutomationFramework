@@ -1,4 +1,4 @@
-# MobileLabsAutomationFramework Next version
+# MobileLabsAutomationFramework(UFT)
 
 ### How to get started with MobileLabs Automation Framework
 		
