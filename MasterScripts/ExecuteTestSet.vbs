@@ -20,21 +20,103 @@ Dim strExecutionPath
 Dim strProcessesToKill
 Dim arrProcessesToKill
 Dim intCounter
-Dim i,j
+Dim i,j,k,n,o
 Dim arrTests
 Dim strTestPath
 Dim strRootPath
 Dim objQTPResultsOpt
+Dim strAddIns
+Dim trustNeeded
+Dim arrAddIns()
+Dim item
+Dim objShell
+
+If WScript.Arguments.length = 0 Then
+   Set objShell = CreateObject("Shell.Application")
+   objShell.ShellExecute "wscript.exe", Chr(34) & WScript.ScriptFullName & Chr(34) & " uac", "", "runas", 1
+   
+   Set objShell = Nothing
+Else
 
 strProcessesToKill = "cmd.exe,EXCEL.EXE,deviceViewer.exe,QTPro.exe,QTAutomationHost.exe,UFT.exe"
 arrProcessesToKill = Split(strProcessesToKill,",")
 
 KillProcess arrProcessesToKill
 
+'Get current directory
+Set objWScript = CreateObject("WScript.Shell")
+Set objFSO = CreateObject("Scripting.FileSystemObject")
+strCurrentPath = WScript.ScriptFullName
+strRootPath = strCurrentPath
+
+'Loop until "MobileLabs Automation Framework" folder is found
+blnParentFolderFound = True
+Do While Replace(Split(strRootPath,"\")(UBound(Split(strRootPath,"\"))), " ", "") <> "MobileLabsAutomationFramework"
+	strRootPath = objFSO.GetParentFolderName(strRootPath)
+	'Exit if reaches the system drive
+	If InStr(1, strRootPath, "\") = 0 Then
+		blnParentFolderFound = False
+		Exit Do
+	End If
+Loop
+
+'Define the path of the Root Folder: <MobileLabs Automation Framework>
+If blnParentFolderFound Then
+	If Right(strRootPath,1) <> "\" Then
+		strRootPath = strRootPath & "\"
+	End If
+	If Replace(objFSO.GetFolder(strRootPath).Name, " ", "") <> "MobileLabsAutomationFramework" Then
+		WScript.Quit
+	End If
+Else
+	MsgBox "Error: ExecuteTestSet.vbs file is being executed from a wrong location: " & objWScript.CurrentDirectory
+	WScript.Quit
+End If
+
+'Read values from TestLab.xlsx
+strMasterExecutionPath = strRootPath & "Environment\TestLab.xlsx"
+Set objExcel = CreateObject("Excel.Application")
+objExcel.Visible = False
+Set objWorkbook = objExcel.Workbooks.Open(strMasterExecutionPath)	
+Set objWorksheet = objExcel.ActiveWorkbook.Worksheets("TestSet")
+
+intColCount = objWorksheet.UsedRange.Columns.Count
+	blnValueFound = True
+	trustNeeded = False
+	strAddIns = ""
+	For i = 1 To intColCount
+		If LCase(objWorksheet.Cells(1,i).Value) = "addins" Then
+			strAddIns = objWorksheet.Cells(2,i).Value
+			
+			If InStr(1,strAddIns,"Mobile Labs Trust",1) Then
+				trustNeeded = True
+			End If
+			
+			o = 0
+			For Each item in Split(strAddIns,",")
+				Redim Preserve arrAddIns(o)
+				arrAddIns(o) = Trim(item)
+				o = o + 1
+			Next
+			Exit For
+		End If
+		If i = intColCount Then
+			blnValueFound = False
+		End If
+	Next
+	
+If Not(blnValueFound) Then
+	MsgBox "Couldn't find the list of AddIns to load. Please check TestLab.xlsx and add a correct value under addIns!"
+End If
+
 'Create an instance of QTP
 Set objQTP = CreateObject("QuickTest.Application")
 'Load required Add-ins
-objQTP.SetActiveAddins Array("Mobile Labs Trust")
+objQTP.SetActiveAddins arrAddIns
+'For n=0 To UBound(arrAddIns)
+	'MsgBox "Addin:" & arrAddIns(n)
+	'objQTP.SetActiveAddins Array(arrAddIns(n))
+'Next
 
 objQTP.Launch
 objQTP.Visible = True
@@ -47,70 +129,47 @@ objQTP.Options.Run.ImageCaptureForTestResults = "OnError"
 objQTP.Options.Run.ViewResults = False
 
 'Check if Mobile Labs Trust is installed or not
-blnAddInFound = False
-For intCounter = 1 To objQTP.Addins.Count
-	If StrComp(Replace(objQTP.Addins.Item(intCounter).Name, " ", ""),  "mobilelabstrust", 1) = 0 Then
-		blnAddInFound = True
-		Exit For
+If trustNeeded Then
+	blnAddInFound = False
+	For intCounter = 1 To objQTP.Addins.Count
+		If StrComp(Replace(objQTP.Addins.Item(intCounter).Name, " ", ""),  "mobilelabstrust", 1) = 0 Then
+			blnAddInFound = True
+			Exit For
+		End If
+	Next
+
+	If Not(blnAddInFound) Then
+		MsgBox "Mobile Labs Trust was not found in the installed add-ins list."
+		objQTP.Quit
 	End If
-Next
+End If
 
-If Not(blnAddInFound) Then
-	MsgBox "Mobile Labs Trust was not found in the installed add-ins list."
-	objQTP.Quit
-Else
-	
-	'Get current directory
-	Set objWScript = CreateObject("WScript.Shell")
-	Set objFSO = CreateObject("Scripting.FileSystemObject")
-	strCurrentPath = WScript.ScriptFullName
-	strRootPath = strCurrentPath
-
-	'Loop until "MobileLabs Automation Framework" folder is found
-	blnParentFolderFound = True
-	Do While Replace(Split(strRootPath,"\")(UBound(Split(strRootPath,"\"))), " ", "") <> "MobileLabsAutomationFramework"
-		strRootPath = objFSO.GetParentFolderName(strRootPath)
-		'Exit if reaches the system drive
-		If InStr(1, strRootPath, "\") = 0 Then
-			blnParentFolderFound = False
-			Exit Do
-		End If
-	Loop
-
-	'Define the path of the Root Folder: <MobileLabs Automation Framework>
-	If blnParentFolderFound Then
-		If Right(strRootPath,1) <> "\" Then
-			strRootPath = strRootPath & "\"
-		End If
-		If Replace(objFSO.GetFolder(strRootPath).Name, " ", "") <> "MobileLabsAutomationFramework" Then
-			WScript.Quit
-		End If
-	Else
-		MsgBox "Error: ExecuteTestSet.vbs file is being executed from a wrong location: " & objWScript.CurrentDirectory
-		WScript.Quit
-	End If
+'If Not(blnAddInFound) Then
+	'MsgBox "Mobile Labs Trust was not found in the installed add-ins list."
+	'objQTP.Quit
+'Else
 	
 	'Execute all tests in the testFolder defined in %\MobileLabsAutomationFramework\Environment\TestLab.xlsx
-	strMasterExecutionPath = strRootPath & "Environment\TestLab.xlsx"
-	Set objExcel = CreateObject("Excel.Application")
-	objExcel.Visible = False
-	Set objWorkbook = objExcel.Workbooks.Open(strMasterExecutionPath)	
-	Set objWorksheet = objExcel.ActiveWorkbook.Worksheets("TestSet")
+	'strMasterExecutionPath = strRootPath & "Environment\TestLab.xlsx"
+	'Set objExcel = CreateObject("Excel.Application")
+	'objExcel.Visible = False
+	'Set objWorkbook = objExcel.Workbooks.Open(strMasterExecutionPath)	
+	'Set objWorksheet = objExcel.ActiveWorkbook.Worksheets("TestSet")
 	
 	'Get the max column occupied in the excel file 
 	intColCount = objWorksheet.UsedRange.Columns.Count
 	blnValueFound = True
 	strExecutionPath = ""
-	For i = 1 To intColCount
-		If LCase(objWorksheet.Cells(1,i).Value) = "testfolder" Then
-			strTestPath = objWorksheet.Cells(2,i).Value
+	For k = 1 To intColCount
+		If LCase(objWorksheet.Cells(1,k).Value) = "testfolder" Then
+			strTestPath = objWorksheet.Cells(2,k).Value
 			If Left(strTestPath,1) = "\" Then
 				strTestPath = Right(strTestPath,Len(strTestPath)-1)
 			End If
 			strExecutionPath = strRootPath & strTestPath
 			Exit For
 		End If
-		If i = intColCount Then
+		If k = intColCount Then
 			blnValueFound = False
 		End If
 	Next
@@ -166,8 +225,8 @@ Else
 	objQTP.Quit
 	Set objQTPResultsOpt = Nothing
 	Set objQTP = Nothing
+'End If
 End If
-
 
 	'##########################################################################################################################
 	''@Function:        GetTestSet
