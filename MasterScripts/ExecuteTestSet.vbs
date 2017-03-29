@@ -20,7 +20,7 @@ Dim strExecutionPath
 Dim strProcessesToKill
 Dim arrProcessesToKill
 Dim intCounter
-Dim i,j,k,n,o
+Dim i,j,k,n,o,p,q,r
 Dim arrTests
 Dim strTestPath
 Dim strRootPath
@@ -30,6 +30,11 @@ Dim trustNeeded
 Dim arrAddIns()
 Dim item
 Dim objShell
+Dim blnNotifications
+Dim strSubject,strMessage,strEmailIds
+Dim intRowCount
+Dim blnEmailSent,strAttachmentPath
+Dim strBuild,strdCUser,strDeviceModel,strDeviceOS,strDeviceOSVersion,strTestSet,strAppId,strdCIP
 
 If WScript.Arguments.length = 0 Then
    Set objShell = CreateObject("Shell.Application")
@@ -51,7 +56,7 @@ strRootPath = strCurrentPath
 
 'Loop until "MobileLabs Automation Framework" folder is found
 blnParentFolderFound = True
-Do While Replace(Split(strRootPath,"\")(UBound(Split(strRootPath,"\"))), " ", "") <> "MobileLabsAutomationFramework"
+Do While LCase(Replace(Split(strRootPath,"\")(UBound(Split(strRootPath,"\"))), " ", "")) <> "mobilelabsautomationframework"
 	strRootPath = objFSO.GetParentFolderName(strRootPath)
 	'Exit if reaches the system drive
 	If InStr(1, strRootPath, "\") = 0 Then
@@ -109,6 +114,74 @@ If Not(blnValueFound) Then
 	MsgBox "Couldn't find the list of AddIns to load. Please check TestLab.xlsx and add a correct value under addIns!"
 End If
 
+Set objWorksheet = objExcel.ActiveWorkbook.Worksheets("TestSet")
+intColCount = objWorksheet.UsedRange.Columns.Count
+blnNotifications = False
+	For p = 1 To intColCount
+		If LCase(objWorksheet.Cells(1,p).Value) = "emailnotifications" Then
+			blnNotifications = objWorksheet.Cells(2,p).Value
+			
+			If blnNotifications = "" Then
+				blnNotifications = False
+			End If
+		ElseIf LCase(objWorksheet.Cells(1,p).Value) = "dcversion" Then
+			strBuild = objWorksheet.Cells(2,p).Value
+			
+		ElseIf LCase(objWorksheet.Cells(1,p).Value) = "dcip" Then
+			strdCIP = objWorksheet.Cells(2,p).Value
+		
+		ElseIf LCase(objWorksheet.Cells(1,p).Value) = "dcuser" Then
+			strdCUser = objWorksheet.Cells(2,p).Value
+		
+		ElseIf LCase(objWorksheet.Cells(1,p).Value) = "devicemodel" Then
+			strDeviceModel = objWorksheet.Cells(2,p).Value
+			
+		ElseIf LCase(objWorksheet.Cells(1,p).Value) = "deviceos" Then
+			strDeviceOS = objWorksheet.Cells(2,p).Value
+		
+		ElseIf LCase(objWorksheet.Cells(1,p).Value) = "deviceosversion" Then
+			strDeviceOSVersion = objWorksheet.Cells(2,p).Value
+		
+		ElseIf LCase(objWorksheet.Cells(1,p).Value) = "testfolder" Then
+			strTestSet = objWorksheet.Cells(2,p).Value
+		
+		ElseIf LCase(objWorksheet.Cells(1,p).Value) = "appid" Then
+			strAppId = objWorksheet.Cells(2,p).Value
+		End If
+	Next
+	
+'Send email for execution start
+If blnNotifications Then
+	Set objWorksheet = objExcel.ActiveWorkbook.Worksheets("Data")
+	intColCount = objWorksheet.UsedRange.Columns.Count
+	strEmailIds = ""
+	r = 2
+	intRowCount = objWorksheet.UsedRange.Rows.Count
+		For q = 1 To intColCount
+			If LCase(objWorksheet.Cells(1,q).Value) = "emailids" Then				
+				For r=2 To intRowCount-1
+					strEmailIds = strEmailIds & objWorksheet.Cells(r,q).Value & ","
+					
+					If objWorksheet.Cells(r,q).Value = "" Then
+						Exit For
+					End If
+				Next
+			End If
+		Next
+	If strEmailIds <> "" Then
+		strEmailIds = Trim(Left(strEmailIds,Len(strEmailIds)-1))
+	End If
+		
+	strSubject = "Test execution started!"
+	strMessage = "Start Time:" & Time & VBNewLine & "dC Server: " & strdCIP & VbNewLine & "dC version: " & strBuild & VbNewLine & "Username: " & strdCUser _
+	& VbNewLine & "Device Model: " & strDeviceModel & VbNewLine & "Device OS: " & strDeviceOS & VbNewLine & "Device OS Version: " & strDeviceOSVersion _
+	& VbNewLine & "Test Set: " & strTestSet & VbNewLine & "App under test: " & strAppId & VbNewLine & VbNewLine & "System Information:" & VbNewLine _
+	& GetSystemInfo
+		
+	'strAttachmentPath = strRootPath & "\Results\Attachment.zip"
+	SendNotification strSubject, strMessage, strEmailIds, ""	
+End If
+
 'Create an instance of QTP
 Set objQTP = CreateObject("QuickTest.Application")
 'Load required Add-ins
@@ -157,6 +230,7 @@ End If
 	'Set objWorksheet = objExcel.ActiveWorkbook.Worksheets("TestSet")
 	
 	'Get the max column occupied in the excel file 
+	Set objWorksheet = objExcel.ActiveWorkbook.Worksheets("TestSet")
 	intColCount = objWorksheet.UsedRange.Columns.Count
 	blnValueFound = True
 	strExecutionPath = ""
@@ -207,6 +281,16 @@ End If
 			Loop
 		
 		Next
+		
+		strSubject = "Test execution completed!"
+		strMessage = "End Time:" & Time & VBNewLine & "dC Server: " & strdCIP & VbNewLine & "dC version: " & strBuild & VbNewLine & "Username: " & strdCUser _
+		& VbNewLine & "Device Model: " & strDeviceModel & VbNewLine & "Device OS: " & strDeviceOS & VbNewLine & "Device OS Version: " & strDeviceOSVersion _
+		& VbNewLine & "Test Set: " & strTestSet & VbNewLine & "App under test: " & strAppId & VbNewLine & VbNewLine & "System Information:" & VbNewLine _
+		& GetSystemInfo
+			
+		strAttachmentPath = strRootPath & "\Results\Attachment.zip"
+		SendNotification strSubject, strMessage, strEmailIds, strAttachmentPath
+		
 	Else
 		MsgBox "Did not find the testFolder column in " & strMasterExecutionPath & " please check the file. Exiting...!!"
 		WScript.Quit
@@ -228,66 +312,201 @@ End If
 'End If
 End If
 
-	'##########################################################################################################################
-	''@Function:        GetTestSet
-	''@Description: 	Get the test folder paths as an array
-	''@Created By: 		Naveen
-	''@Created On: 		9-Sept-2015
-	''--------------------------------------------------------------------------------------------------------------------------
-	''@Param Name: 		strTestsFolderPath
-	''@Param Type: 		String
-	''@Param Drtn: 		In
-	''@Param Desc: 		The folder that contains all the tests to be returned
-	''--------------------------------------------------------------------------------------------------------------------------
+'##########################################################################################################################
+''@Function:        GetTestSet
+''@Description: 	Get the test folder paths as an array
+''@Created By: 		Naveen
+''@Created On: 		9-Sept-2015
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name: 		strTestsFolderPath
+''@Param Type: 		String
+''@Param Drtn: 		In
+''@Param Desc: 		The folder that contains all the tests to be returned
+''--------------------------------------------------------------------------------------------------------------------------
 
-	Function GetTestSet(ByVal strTestsFolderPath)
-		Dim objFSO1
-		Dim objParentFolder
-		Dim objSubFolder
-		Dim Folder
+Function GetTestSet(ByVal strTestsFolderPath)
+	Dim objFSO1
+	Dim objParentFolder
+	Dim objSubFolder
+	Dim Folder
 	
-		Set objFSO1 = CreateObject ("Scripting.FileSystemObject")
-		Set objParentFolder = objFSO1.GetFolder(strTestsFolderPath)
-		Set objSubFolder = objParentFolder.SubFolders
-        For Each Folder in objSubFolder
-			GetTestSet = Trim(GetTestSet & Folder.Path & "||")
-		Next
+	Set objFSO1 = CreateObject ("Scripting.FileSystemObject")
+	Set objParentFolder = objFSO1.GetFolder(strTestsFolderPath)
+	Set objSubFolder = objParentFolder.SubFolders
+    For Each Folder in objSubFolder
+		GetTestSet = Trim(GetTestSet & Folder.Path & "||")
+	Next
 		
-		Set objFSO1 = Nothing
-		Set objParentFolder = Nothing
-		Set objSubFolder = Nothing
+	Set objFSO1 = Nothing
+	Set objParentFolder = Nothing
+	Set objSubFolder = Nothing
 		
-		GetTestSet = Left(GetTestSet,Len(GetTestSet)-2)
-		GetTestSet = Split(GetTestSet,"||")
-	End Function
+	GetTestSet = Left(GetTestSet,Len(GetTestSet)-2)
+	GetTestSet = Split(GetTestSet,"||")
+End Function
 
-
-	Sub KillProcess(arrProcessesToKill)
+'##########################################################################################################################
+''@Sub:        		KillProcess
+''@Description: 	Kills all processes passed in as an array
+''@Created By: 		Naveen
+''@Created On: 		9-Sept-2015
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name: 		arrProcessesToKill
+''@Param Type: 		Array
+''@Param Drtn: 		In
+''@Param Desc: 		An array with the names of processd to kill
+''--------------------------------------------------------------------------------------------------------------------------
+Sub KillProcess(ByVal arrProcessesToKill)
 			
-		Dim strComputer
-		Dim objWMIService
-		Dim colProcess
-		Dim objProcess
-		Dim intCount
+	Dim strComputer
+	Dim objWMIService
+	Dim colProcess
+	Dim objProcess
+	Dim intCount
 		
-		For intCount = 0 to (Ubound(arrProcessesToKill))
-			strComputer = "."
+	For intCount = 0 to (Ubound(arrProcessesToKill))
+		strComputer = "."
 
-			'Returning a reference to an window automation object
-			Set objWMIService = GetObject("winmgmts:" _
-			& "{impersonationLevel=impersonate}!\\" _ 
-			& strComputer & "\root\cimv2") 
+		'Returning a reference to an window automation object
+		Set objWMIService = GetObject("winmgmts:" _
+		& "{impersonationLevel=impersonate}!\\" _ 
+		& strComputer & "\root\cimv2") 
 
-			'Executing query to get the process name
-			Set colProcess = objWMIService.ExecQuery _
-			("Select * from Win32_Process " )
+		'Executing query to get the process name
+		Set colProcess = objWMIService.ExecQuery _
+		("Select * from Win32_Process " )
 
-			'Search for a process name and kill the process
-			For Each objProcess in colProcess
-				If objProcess.Name= arrProcessesToKill(intCount) Then
-					objProcess.Terminate
-				End If
-			Next
+		'Search for a process name and kill the process
+		For Each objProcess in colProcess
+			If objProcess.Name= arrProcessesToKill(intCount) Then
+				objProcess.Terminate
+			End If
 		Next
+	Next
 
-	End Sub
+End Sub
+	
+	
+'##########################################################################################################################
+''@Sub:        		SendNotification
+''@Description: 	Sends an email with passed in message to a specific set of email Ids
+''@Created By: 		Naveen
+''@Created On: 		28-Mar-2017
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name: 		strSubject
+''@Param Type: 		String
+''@Param Drtn: 		In
+''@Param Desc: 		Email subject
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name: 		strMessage
+''@Param Type: 		String
+''@Param Drtn: 		In
+''@Param Desc: 		Email message
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name: 		strEmailIds
+''@Param Type: 		String
+''@Param Drtn: 		In
+''@Param Desc: 		Target email Ids
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name: 		strAttachmentPath
+''@Param Type: 		String
+''@Param Drtn: 		In
+''@Param Desc: 		Path to the Attachment.zip
+''--------------------------------------------------------------------------------------------------------------------------
+
+Sub SendNotification(ByVal strSubject, ByVal strMessage, ByVal strEmailIds, ByVal strAttachmentPath)
+	Dim objEmail, objConfigEmail
+
+	'Send notification
+	Const fromEmail = "mobilelabsQA@gmail.com"
+	Const password = "Basement@D-25"
+
+	Set objEmail = CreateObject("CDO.Message")
+	objEmail.From = fromEmail
+	objEmail.To = strEmailIds
+	objEmail.Subject = strSubject
+	objEmail.TextBody = strMessage
+
+	'If WScript.Arguments.Count > 3 Then
+	'	objEmail.AddAttachment WScript.Arguments.Item(3)
+	'End If
+	
+	If strAttachmentPath <> "" Then
+		objEmail.AddAttachment strAttachmentPath
+	End If
+
+	Set objConfigEmail = objEmail.Configuration
+	objConfigEmail.Fields("http://schemas.microsoft.com/cdo/configuration/smtpserver") = "smtp.gmail.com"
+	objConfigEmail.Fields("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = 465
+	objConfigEmail.Fields("http://schemas.microsoft.com/cdo/configuration/sendusing") = 2
+	objConfigEmail.Fields("http://schemas.microsoft.com/cdo/configuration/smtpauthenticate") = 1
+	objConfigEmail.Fields("http://schemas.microsoft.com/cdo/configuration/smtpusessl") = true
+	objConfigEmail.Fields("http://schemas.microsoft.com/cdo/configuration/sendusername") = fromEmail
+	objConfigEmail.Fields("http://schemas.microsoft.com/cdo/configuration/sendpassword") = password
+	objConfigEmail.Fields.Update
+
+	objEmail.Send
+
+	Set objEmail = Nothing
+	Set objConfigEmail = Nothing
+End Sub
+
+'##########################################################################################################################
+''@Function:        GetSystemInfo
+''@Description: 	Gets system information of the test machine and returns a multi-line string
+''@Created By: 		Naveen
+''@Created On: 		29-Mar-2017
+''--------------------------------------------------------------------------------------------------------------------------
+Function GetSystemInfo()
+	Dim strSystemInfo
+	Dim objWMIService, colItems, objItem, objMethod
+
+	'Get System Info
+	Set objWMIService = GetObject( "winmgmts:\\.\root\cimv2" )
+	Set colItems = objWMIService.ExecQuery( "Select * from Win32_ComputerSystem")', , 48 )
+
+	For Each objItem in colItems
+	   For Each objMethod In objItem.Properties_
+			Select Case UCase(objMethod.Name)
+				Case "CURRENTTIMEZONE"
+					strSystemInfo = strSystemInfo & objMethod.Name & ": " & objMethod.Value & VBNewLine
+
+				Case "DESCRIPTION"
+					strSystemInfo = strSystemInfo & objMethod.Name & ": " & objMethod.Value & VBNewLine
+
+				Case "DNSHOSTNAME"
+					strSystemInfo = strSystemInfo & objMethod.Name & ": " & objMethod.Value & VBNewLine
+
+				Case "Domain"
+					strSystemInfo = strSystemInfo & objMethod.Name & ": " & objMethod.Value & VBNewLine
+
+				Case "MANUFACTURER"
+					strSystemInfo = strSystemInfo & objMethod.Name & ": " & objMethod.Value & VBNewLine
+
+				Case "NAME"
+					strSystemInfo = strSystemInfo & objMethod.Name & ": " & objMethod.Value & VBNewLine
+
+				Case "NUMBEROFPROCESSORS"
+					strSystemInfo = strSystemInfo & objMethod.Name & ": " & objMethod.Value & VBNewLine
+
+				Case "PARTOFDOMAIN"
+					strSystemInfo = strSystemInfo & objMethod.Name & ": " & objMethod.Value & VBNewLine
+
+				Case "PRIMARYOWNERNAME"
+					strSystemInfo = strSystemInfo & objMethod.Name & ": " & objMethod.Value & VBNewLine
+
+				Case "SYSTEMTYPE"
+					strSystemInfo = strSystemInfo & objMethod.Name & ": " & objMethod.Value & VBNewLine
+
+				Case "TOTALPHYSICALMEMORY"
+					strSystemInfo = strSystemInfo & objMethod.Name & ": " & CInt(objMethod.Value/1073741824) & " GB" & VBNewLine
+
+			End Select
+	   Next
+	Next
+	
+	GetSystemInfo = strSystemInfo
+	
+	Set objWMIService = Nothing
+	Set colItems = Nothing
+End Function
