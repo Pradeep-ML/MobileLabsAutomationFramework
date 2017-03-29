@@ -23,12 +23,11 @@ This document describes what needs to be done in order to use the automation fra
 3.	DefectReporting – TBD, report defects to Jira automatically for failures. Not implemented as of now as it requires complex design and logic to determine which bugs need to go to Jira and also check if the bug/failure is already logged or not.
 4.	Environment – File(s) that will be used to setup environment like what device model, os and app will the tests run on. TestLab.xlsx is the only file being used at the moment.
 5.	FunctionLibraries – All qfls go in here and this folder will be added to QTP/UFT folder list at run-time.
-6.	MasterScripts – Only ExecuteTestSet.vbs will be used for now which will read configuration from TestLab.xlsx and execute all the tests in the defined directory.
-7.	Notification – TBD, will send email notifications on start and end of the execution.
-8.	ORs – All object repositories go in here. This folder will be added to QTP/UFT folder list at run-time.
-9.	Recovery – TDB, place for adding any recovery scenarios in future.
-10.	Results – TBD, as at the moment the results are saved to a temp location.
-11.	Tests – All tests will be kept in here. The folder structure is defined below:
+6.	MasterScripts – Only ExecuteTestSet.vbs will be used for now which will read configuration from TestLab.xlsx and execute all the tests in the defined directory. It’ll also send out email notifications using the gmail smtp and mobilelabsqa@gmail.com account.
+7.	ORs – All object repositories go in here. This folder will be added to QTP/UFT folder list at run-time.
+8.	Recovery – TDB, place for adding any recovery scenarios in future.
+9.	Results – TBD, as at the moment the results are saved to a temp location.
+10.	Tests – All tests will be kept in here. The folder structure is defined below:
 
 	¬	Module – Like Trust run-time or Installer
 	
@@ -36,8 +35,8 @@ This document describes what needs to be done in order to use the automation fra
 		
 	¬	Application – Like PhoneLookup or Trust Browser
 			
-12.	Tools – All executables, dlls and other files needed at run-time will be placed here along with CLI files contained in a sub-folder. The files will be copied to %temp%\MobileLabsAutomation at run-time.
-13.	TrustBuilds – TBD, for future when the Trust build will be installed automatically.
+11.	Tools – All executables, dlls and other files needed at run-time will be placed here along with CLI files contained in a sub-folder. The files will be copied to %temp%\MobileLabsAutomation at run-time.
+12.	TrustBuilds – TBD, for future when the Trust build will be installed automatically.
 
 ### Configuration
 
