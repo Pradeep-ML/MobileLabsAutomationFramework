@@ -1451,6 +1451,87 @@ Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment(
 Environment("ExpectedResult") = "Activates the window"
 strResult =  VerifyActivate(objMobiDevice)
 
+' Step 116   Execute Scale with Blank Value
+''#######################################################
+intStep = intStep+1
+Environment("StepName") = "Step" & intStep
+Environment("Description") = "Execute Scale method with Blank Value on MobiDevice"
+Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & "." & intStep & ": " &_
+"Execute Scale method with Blank Value on MobiDevice." & VBNewLine
+Environment("ExpectedResult") = "Scale method with Blank Value should throw an error"
+strResult = VerifyScale(objMobiDevice,"")
+
+' Step 116   Execute Scale with a string Value
+''#######################################################
+intStep = intStep+1
+Environment("StepName") = "Step" & intStep
+Environment("Description") = "Execute Scale method with String Value on MobiDevice"
+Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & "." & intStep & ": " &_
+"Execute Scale method with String Value on MobiDevice." & VBNewLine
+Environment("ExpectedResult") = "Scale method with string Value should throw an error"
+strResult = VerifyScale(objMobiDevice,"Hello")
+
+' Step 116   Execute Scale with a float/Double Value
+''#######################################################
+intStep = intStep+1
+Environment("StepName") = "Step" & intStep
+Environment("Description") = "Execute Scale method with float/Double Value on MobiDevice"
+Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & "." & intStep & ": " &_
+"Execute Scale method with float/Double Value on MobiDevice." & VBNewLine
+Environment("ExpectedResult") = "Scale method with float/Double Value should throw an error"
+strResult = VerifyScale(objMobiDevice,56.9)
+
+' Step 116   Execute Scale with less than 25 Value
+''#######################################################
+intStep = intStep+1
+Environment("StepName") = "Step" & intStep
+Environment("Description") = "Execute Scale method with less than 25 Value on MobiDevice"
+Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & "." & intStep & ": " &_
+"Execute Scale method with less than 25 Value on MobiDevice." & VBNewLine
+Environment("ExpectedResult") = "Scale method with less than 25 Value should throw an error"
+strResult = VerifyScale(objMobiDevice,10)
+
+' Step 116   Execute Scale with greater than 100 Value
+''#######################################################
+intStep = intStep+1
+Environment("StepName") = "Step" & intStep
+Environment("Description") = "Execute Scale method with greater than 100 Value on MobiDevice"
+Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & "." & intStep & ": " &_
+"Execute Scale method with greater than 100 Value on MobiDevice." & VBNewLine
+Environment("ExpectedResult") = "Scale method with greater than 100 Value should throw an error"
+strResult = VerifyScale(objMobiDevice,500)
+
+' Step 116   Execute Scale with valid Value 25
+''#######################################################
+intStep = intStep+1
+Environment("StepName") = "Step" & intStep
+Environment("Description") = "Execute Scale method with valid Value 25 on MobiDevice"
+Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & "." & intStep & ": " &_
+"Execute Scale method with valid Value 25 on MobiDevice." & VBNewLine
+Environment("ExpectedResult") = "Scale method with valid Value 25 should change the scale to 25"
+strResult = VerifyScale(objMobiDevice,25)
+
+' Step 116   Execute Scale with valid Value 80
+''#######################################################
+intStep = intStep+1
+Environment("StepName") = "Step" & intStep
+Environment("Description") = "Execute Scale method with valid Value 80 on MobiDevice"
+Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & "." & intStep & ": " &_
+"Execute Scale method with valid Value 80 on MobiDevice." & VBNewLine
+Environment("ExpectedResult") = "Scale method with valid Value 80 should change the scale to 80"
+strResult = VerifyScale(objMobiDevice,80)
+
+' Step 116   Execute Scale with valid Value 100
+''#######################################################
+intStep = intStep+1
+Environment("StepName") = "Step" & intStep
+Environment("Description") = "Execute Scale method with valid Value 100 on MobiDevice"
+Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & "." & intStep & ": " &_
+"Execute Scale method with valid Value 100 on MobiDevice." & VBNewLine
+Environment("ExpectedResult") = "Scale method with valid Value 100 should change the scale to 100"
+strResult = VerifyScale(objMobiDevice,100)
+
+
 '*********************************************************************************************************************
 
 'End test iteration
