@@ -114,17 +114,6 @@ Environment("ExpectedResult") = "Execute Rotate method with eLANDSCAPELEFT value
 strResult = VerifyRotate(objMobiDevice,eLANDSCAPELEFT)
 '###############################################################
 
-' Step 116   Execute Rotate method with ePORTRAIT value
-''#######################################################
-intStep = intStep+1
-Environment("StepName") = "Step" & intStep
-Environment("Description") = "Execute Rotate method with ePORTRAIT value on MobiDevice"
-Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & "." & intStep & ": " &_
-"Execute Rotate method with ePORTRAIT value on MobiDevice." & VBNewLine
-Environment("ExpectedResult") = "Execute Rotate method with ePORTRAIT value should change the orientation accordingly"
-strResult = VerifyRotate(objMobiDevice,ePORTRAIT)
-'###############################################################
-
 
 ' Step 116   Execute Rotate method with eLANDSCAPERIGHT value
 ''#######################################################
@@ -135,6 +124,17 @@ Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment(
 "Execute Rotate method with eLANDSCAPERIGHT value on MobiDevice." & VBNewLine
 Environment("ExpectedResult") = "Execute Rotate method with eLANDSCAPERIGHT value should change the orientation accordingly"
 strResult = VerifyRotate(objMobiDevice,eLANDSCAPERIGHT)
+'###############################################################
+
+' Step 116   Execute Rotate method with ePORTRAIT value
+''#######################################################
+intStep = intStep+1
+Environment("StepName") = "Step" & intStep
+Environment("Description") = "Execute Rotate method with ePORTRAIT value on MobiDevice"
+Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & "." & intStep & ": " &_
+"Execute Rotate method with ePORTRAIT value on MobiDevice." & VBNewLine
+Environment("ExpectedResult") = "Execute Rotate method with ePORTRAIT value should change the orientation accordingly"
+strResult = VerifyRotate(objMobiDevice,ePORTRAIT)
 '###############################################################
 
 ' Step 116   Execute Rotate method with Blank/Invalid value

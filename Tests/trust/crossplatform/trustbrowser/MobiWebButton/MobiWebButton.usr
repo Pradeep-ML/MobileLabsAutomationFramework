@@ -32,7 +32,7 @@ Lang=none
 
 [TulipInfo]
 ProductName=HP Unified Functional Testing
-Version=12.53
+Version=12.02
 
 [TulipAddins]
 Database=
@@ -41,7 +41,6 @@ Insight=
 Mobile Labs Trust=
 Windows Applications=
 TEA=
-Windows Runtime=
 XML=
 
 [ExtraFiles]
