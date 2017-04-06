@@ -249,7 +249,7 @@ Environment("Description") = "Execute GetROProperty on MobiSwitch."
 'Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & "." & intStep & ": " &_
 '"Execute GetROProperty on MobiSwitch." & VBNewLine
 Environment("ExpectedResult") = "GetROProperty should get the correct run-time value for a property."
-arrProperty = Array("visible" , "accessibilityidentifier","enabled")
+arrProperty = Array("visible" , "accessibilitylabel","enabled")
 arrPropertyValue = Array(True,"controltogglebutton",True)
 blnFlag = VerifyGetROProperty(objMobiSwitch,arrProperty,arrPropertyValue)
 

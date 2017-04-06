@@ -104,7 +104,7 @@ Environment("Description") = "Execute GetTOProperties method"
 Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & "." & intStep & ": " &_
 "Execute GetTOProperties on mobilist ." & VBNewLine
 Environment("ExpectedResult") = "GetTOProperties should get all properties for an object that are used for description."
-arrProps = Array("micclass","allowmultipleselection","id")
+arrProps = Array("micclass","allowmultipleselection","visible")
 strResult = VerifyGetTOProperties(objMobiList, arrProps)
 
 
@@ -393,7 +393,7 @@ Environment("Description") = "Execute SetToProperty"
 Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & "." & intStep & ": " &_
 "Execute SetTOProperty on MobiList." & VBNewLine
 Environment("ExpectedResult") = "SetTOProperty should set the value of the test object property."
-arrProps = Array("itemscount","allowmultipleselection","id")
+arrProps = Array("visible","allowmultipleselection")
 strResult = VerifySetTOProperty(objMobiList, arrProps)
 
 
