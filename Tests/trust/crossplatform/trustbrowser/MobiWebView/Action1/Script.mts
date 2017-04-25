@@ -29,7 +29,7 @@ Set objMobiWebView = MobiDevice("Web Browser").MobiWebView("WebView")
 Set objMobiWebEdit = MobiDevice("Web Browser").MobiWebEdit("edTP")
 
 'URL of the application to be opened
-strURL =  "http://10.10.1.53/qa/ml.html"
+strURL =  "http://qa-content.mobilelabsinc.net/ml.html"
 strURL1 = "www.tutorialspoint.com"
 
 OpenURL strURL1 , objMobiWebEdit , 5 
