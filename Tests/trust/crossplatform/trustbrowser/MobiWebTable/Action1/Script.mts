@@ -31,7 +31,7 @@ arrROProps = Array( "name","id")
 arrROPropValues = Array ("table1-name", "table1-id")
 
 'URL of the application to be opened
-strURL = "http://10.10.1.53/qa/ml.html"
+strURL = "http://qa-content.mobilelabsinc.net/ml.html"
 strURL1 = "www.google.com"
 strURL2 = "www.gmail.com"
 

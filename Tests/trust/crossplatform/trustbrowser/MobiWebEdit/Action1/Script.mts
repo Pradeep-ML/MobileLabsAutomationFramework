@@ -27,7 +27,7 @@ arrROProps = Array("text" , "backgroundcolor" , "color")
 arrROPropValues = array("" , "rgb(255, 255, 255)" , "rgb(0, 0, 0)")
 
 'URL of the application to be opened
-strURL =  "http://10.10.1.53/qa/ml.html"
+strURL =  "http://qa-content.mobilelabsinc.net/ml.html"
 strURL1 = "www.google.com"
 
 

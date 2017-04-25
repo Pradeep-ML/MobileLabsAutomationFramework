@@ -34,7 +34,7 @@ arrROProps = Array( "value" , "id")
 arrROPropValues = Array( "dinos" , "dinos-id")
 
 'URL of the application to be opened
-strURL =  "http://10.10.1.53/qa/ml.html"
+strURL =  "http://qa-content.mobilelabsinc.net/ml.html"
 strURL1 = "www.google.com"
 strURL2 = "www.gmail.com"
 

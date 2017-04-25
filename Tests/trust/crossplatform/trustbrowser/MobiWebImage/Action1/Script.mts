@@ -29,7 +29,7 @@ arrROPropValues = Array("img-id")
 
 
 'URL of the application to be opened
-strURL =  "http://10.10.1.53/qa/ml.html"
+strURL =  "http://qa-content.mobilelabsinc.net/ml.html"
 strURL1 = "www.google.com"
 strURL2 = "https://www.google.co.in/search?ei=itgNWNmGBIzgvgSq3q24BQ&q=different+brand+phones+images&oq=different+brand+phones+images&gs_l=mobile-gws-serp.3..33i21k1.808436.835316.0.835403.74.50.19.14.14.0.410.10107.0j36j7j3j3.49.0....0...1c.1.64.mobile-gws-serp..6.64.6761.3..0j41j0i67k1j0i2i159i67k1j0i131k1j0i2i159i131k1j0i10k1j0i2i159k1j0i22i30k1j0i13i5i30k1j0i8i13i30k1.phRVjTMByis"
 
