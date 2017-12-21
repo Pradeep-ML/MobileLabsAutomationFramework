@@ -1,0 +1,5 @@
+﻿<Properties>
+  <WatchEntry0 value="strTOValue" />
+  <WatchEntry1 value="strUpdateValue" />
+  <WatchEntry2 value="strTOValueUpdated" />
+</Properties>

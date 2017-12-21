@@ -1,0 +1,5 @@
+﻿<Properties>
+  <WatchEntry0 value="FetchHeaderElement" />
+  <WatchEntry1 value="strOSVersion" />
+  <WatchEntry2 value="objCol.Count" />
+</Properties>

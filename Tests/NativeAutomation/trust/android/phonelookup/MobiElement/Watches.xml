@@ -1,0 +1,5 @@
+﻿<Properties>
+  <WatchEntry0 value="FetchHeaderElement" />
+  <WatchEntry1 value="strRows" />
+  <WatchEntry2 value="strLastvisibleItem" />
+</Properties>

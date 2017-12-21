@@ -1,0 +1,8 @@
+﻿<Properties>
+  <WatchEntry0 value="strDeviceQuery" />
+  <WatchEntry1 value="strDeviceName" />
+  <WatchEntry2 value="strAppName" />
+  <WatchEntry3 value="strConnectionString" />
+  <WatchEntry4 value="strConnectParam" />
+  <WatchEntry5 value="strCLIPath" />
+</Properties>

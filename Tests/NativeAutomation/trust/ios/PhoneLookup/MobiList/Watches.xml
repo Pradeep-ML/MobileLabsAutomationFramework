@@ -1,0 +1,5 @@
+﻿<Properties>
+  <WatchEntry0 value="strHeaderText" />
+  <WatchEntry1 value="Instr(1, LCase(strHeaderText) , &quot;remember&quot;) &gt; 0" />
+  <WatchEntry2 value="blnFlag" />
+</Properties>

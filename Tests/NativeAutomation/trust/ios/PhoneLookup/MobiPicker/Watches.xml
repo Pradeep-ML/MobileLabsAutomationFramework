@@ -1,0 +1,8 @@
+﻿<Properties>
+  <WatchEntry0 value="objTestObject" />
+  <WatchEntry1 value="strDirection" />
+  <WatchEntry2 value="strVelocity" />
+  <WatchEntry3 value="intStartPercentage" />
+  <WatchEntry4 value="intEndPercentage" />
+  <WatchEntry5 value="objAfterSwipe" />
+</Properties>

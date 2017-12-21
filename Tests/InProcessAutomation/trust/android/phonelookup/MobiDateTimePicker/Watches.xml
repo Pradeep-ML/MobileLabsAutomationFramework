@@ -1,0 +1,8 @@
+﻿<Properties>
+  <WatchEntry0 value="intYear" />
+  <WatchEntry1 value="intMonth" />
+  <WatchEntry2 value="intDay" />
+  <WatchEntry3 value="intHour" />
+  <WatchEntry4 value="intMinute" />
+  <WatchEntry5 value="objTestObject.GetROProperty(&quot;resourcename&quot;)" />
+</Properties>

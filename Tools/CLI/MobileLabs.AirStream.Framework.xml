@@ -93,6 +93,15 @@
             <param name="key">The dictionary key whose value will be retrieved.</param>
             <returns>The value associated with the key, or default(TValue).</returns>
         </member>
+        <member name="M:MobileLabs.AirStream.Framework.Collections.DictionaryExtensions.RemoveAll``2(System.Collections.Generic.IDictionary{``0,``1},System.Func{System.Collections.Generic.KeyValuePair{``0,``1},System.Boolean})">
+            <summary>
+            Removes all elements that match specified conditions.
+            </summary>
+            <typeparam name="TKey">The key type of the dictionary.</typeparam>
+            <typeparam name="TValue">The value type of the dictionary.</typeparam>
+            <param name="dict">The dictionary to be modified</param>
+            <param name="predicate">The predicate that defines the elements to remove.</param>
+        </member>
         <member name="T:MobileLabs.AirStream.Framework.Collections.EnumerableExtensions">
             <summary>
             Provides extensions for enumerable operations.
@@ -412,6 +421,51 @@
             </param>
             <returns>A Task.</returns>
         </member>
+        <member name="M:MobileLabs.AirStream.Framework.Extensions.StreamEx.ReadFully(System.IO.Stream,System.Byte[],System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Reads a specific number of bytes.
+            </summary>
+            <param name="stream"></param>
+            <param name="buf"></param>
+            <param name="offset"></param>
+            <param name="count"></param>
+            <param name="cancel"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Extensions.StreamEx.CopyToExactAsync(System.IO.Stream,System.IO.Stream,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            More then 'length' will not be written, if less then 'length' is
+            read, 0's are written to pad the stream.
+            </summary>
+        </member>
+        <member name="T:MobileLabs.AirStream.Framework.IO.Hid">
+            <summary>
+            Definitions related to the USB HID specification.
+            </summary>
+        </member>
+        <member name="T:MobileLabs.AirStream.Framework.IO.Hid.Key">
+            <summary>
+            HID keyboard usage codes.
+            </summary>
+        </member>
+        <member name="T:MobileLabs.AirStream.Framework.IO.LocalFileHashCache">
+            <summary>
+            Provides a SHA1 cache for local filesystem paths.
+            </summary>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.IO.LocalFileHashCache.Sha1(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get and cache the SHA1 of the contents of the file at path. The
+            cached value never expires unless explicitly evicted. There are no
+            limits to cache growth.
+            </summary>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.IO.LocalFileHashCache.Evict(System.String)">
+            <summary>
+            Removes the given path from the cache, if present. Returns true if
+            a cache entry was removed.
+            </summary>
+        </member>
         <member name="T:MobileLabs.AirStream.Framework.IO.AsyncProcess">
             <summary>
             BeingErrorReadLine and company wont work with non-\n delinators.
@@ -479,24 +533,9 @@
             Path to AirStream.config
             </summary>
         </member>
-        <member name="P:MobileLabs.AirStream.Framework.IO.AirStreamPath.PluginsIni">
-            <summary>
-            Path to plugins.ini
-            </summary>
-        </member>
-        <member name="P:MobileLabs.AirStream.Framework.IO.AirStreamPath.FriendlyNames">
-            <summary>
-            Path to friendlynames.txt
-            </summary>
-        </member>
         <member name="P:MobileLabs.AirStream.Framework.IO.AirStreamPath.License">
             <summary>
             Path to deviceconnect.lic
-            </summary>
-        </member>
-        <member name="P:MobileLabs.AirStream.Framework.IO.AirStreamPath.AuthenticationSecretKey">
-            <summary>
-            Path to AuthenticationSecretKey
             </summary>
         </member>
         <member name="P:MobileLabs.AirStream.Framework.IO.AirStreamPath.ServiceRestart">
@@ -567,6 +606,17 @@
         <member name="P:MobileLabs.AirStream.Framework.IO.AirStreamPath.DeviceBridgeDownload">
             <summary>
             Path to dcb.zip -- the user deviceBridge download.
+            </summary>
+        </member>
+        <member name="T:MobileLabs.AirStream.Framework.IO.HttpChunkedStream">
+            This stream holds no resources of its own and does not need to be
+            disposed. Call FlushAsync when completed.
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.IO.HttpChunkedStream.WriteAsync(System.Byte[],System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Writes to the provided stream using the HTTP chunked encoding. The
+            buffer passed to WriteAsync has the chunked pre/postamble added to
+            it, so be sure there's proper room.
             </summary>
         </member>
         <member name="T:MobileLabs.AirStream.Framework.IO.ReusableBuffer`1">
@@ -723,6 +773,299 @@
             </summary>
             <param name="source">The source stream.</param>
             <returns>All bytes read until the end of the stream.</returns>
+        </member>
+        <member name="T:MobileLabs.AirStream.Framework.Reflection.TypeExtensions">
+            <summary>
+            Extensions to System.Type.
+            </summary>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Reflection.TypeExtensions.IsInstanceOfGenericType(System.Type,System.Type)">
+            <summary>
+            Determines whether a type is an instance of the given generic type definition.
+            Searches all implemented interfaces of the provided type,
+            and all base classes of the type, for a matching generic type definition.
+            </summary>
+            <param name="type">The type to check.</param>
+            <param name="genericTypeDefinition">The type of the generic type definition, e.g. typeof(IEnumerable&lt;&gt;)</param>
+            <returns>True if the type is an instance of the generic type, false otherwise.</returns>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Reflection.TypeExtensions.GetGenericTypeDefinitionInstance(System.Type,System.Type)">
+            <summary>
+            Finds a type in the given type's inheritance hierarchy (including both interfaces
+            and classes) which is an instance of the given generic type definition. 
+            </summary>
+            <param name="type">The type for which the generic type instance should be located.</param>
+            <param name="genericTypeDefinition">The generic type definition to search for.</param>
+            <returns>A type which instantiates the given generic type definition.</returns>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Reflection.TypeExtensions.GetStringConstants(System.Type)">
+            <summary>
+            Returns all public static const string fields from a static class.
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MobileLabs.AirStream.Framework.Serialization.StringMarshal">
+            <summary>
+            Provides methods for converting between managed and unmanaged string types.
+            </summary>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.StringMarshal.PtrToStringUtf8(System.IntPtr,System.Int32)">
+            <summary>
+            Given a pointer to a zero-terminated UTF-8 string, return the string.
+            </summary>
+            <remarks>
+            The lengthLimit parameter is provided to prevent buffer overrun
+            and to prevent scanning too far through possibly invalid data.
+            
+            Throws exception if the string's length is greater than or equal
+            to lengthLimit, or if the string cannot be decoded as UTF8.
+            </remarks>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.StringMarshal.StringToHGlobalUtf8(System.String)">
+            <summary>
+            Copies the contents of a managed String into unmanaged memory, converting into UTF8 format as it copies.
+            </summary>
+            <remarks>
+            Caller is responsible for calling Marshal.FreeHGlobal() to free the allocated memory.
+            
+            The returned string is null-terminated.
+            </remarks>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.StringMarshal.ZeroTerminatedLength(System.IntPtr,System.Int32)">
+            <summary>
+            Given a pointer to a zero-terminated native string, return the length.
+            </summary>
+            <remarks>
+            The maxLength parameter is provided to prevent buffer overrun
+            and to prevent scanning too far through possibly invalid data.
+            </remarks>
+        </member>
+        <member name="T:MobileLabs.AirStream.Framework.Serialization.Csv">
+            <summary>
+            Serialize objects to and from CSV format.
+            </summary>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Csv.Serialize``1(``0[],MobileLabs.AirStream.Framework.Serialization.CsvOptions)">
+            <summary>
+            Serialize a collection of objects to CSV.
+            </summary>
+            <param name="objs"></param>
+            <param name="options"></param>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Csv.Serialize``1(``0[],System.Collections.Generic.Dictionary{System.String,System.String[]},MobileLabs.AirStream.Framework.Serialization.CsvOptions)">
+            <summary>
+            Serialize a collection of objects to CSV.
+            </summary>
+            <param name="objs"></param>
+            <param name="flattenColumns"></param>
+            <param name="options"></param>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Csv.Parse(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="csv"></param>
+            <returns></returns>
+            <exception cref="T:System.FormatException"></exception>
+            /// <exception cref="T:System.ArgumentNullException"></exception>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Csv.Deserialize``1(System.String,MobileLabs.AirStream.Framework.Serialization.CsvOptions)">
+            <summary>
+            
+            </summary>
+            <param name="csv"></param>
+            <param name="options"></param>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+            <exception cref="T:System.FormatException"></exception>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Csv.FormatValue(System.Object,System.Boolean)">
+            <summary>
+            Formats a value to the expectations of a CSV cell.
+            </summary>
+            <param name="o"></param>
+            <param name="quoted"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Csv.GetMimeType(MobileLabs.AirStream.Framework.Serialization.CsvOptions)">
+            <summary>
+            Return the MIME type given the provided options set.
+            </summary>
+            <param name="options"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MobileLabs.AirStream.Framework.Serialization.Csv.FlattenAttribute">
+            <summary>
+            Use this in addition to the flattenColumns argument to
+            cause a Dictionary&lt;string, object&gt; to flatten into
+            column rows.
+            ie, your dictionary is named "flattenme" and contains
+            { foo: "bar", blah: "baz" }
+            Then for flattenColumns you'd pass { flattenme: ["foo", "blah"] }
+            and the columns "foo" and "blah" are included in the serialization.
+            
+            Properties that are flattened can not be deserialized.
+            </summary>
+        </member>
+        <member name="T:MobileLabs.AirStream.Framework.Serialization.CsvOptions">
+            <summary>
+            Options for the CSV serializations
+            </summary>
+        </member>
+        <member name="F:MobileLabs.AirStream.Framework.Serialization.CsvOptions.None">
+            <summary>
+            No CSV options specified.
+            </summary>
+        </member>
+        <member name="F:MobileLabs.AirStream.Framework.Serialization.CsvOptions.HeaderRow">
+            <summary>
+            Skip the first line. Used for skipping header rows.
+            </summary>
+        </member>
+        <member name="T:MobileLabs.AirStream.Framework.Serialization.Json">
+            <summary>
+            JSON serialization with standardized settings.
+            </summary>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Json.GetJsonSettings(Newtonsoft.Json.Serialization.IContractResolver)">
+            <summary>
+            JSON serialization with standardized settings.
+            </summary>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Json.Deserialize``1(System.String)">
+            <summary>
+            JSON deserialization with standardized settings.
+            </summary>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Json.Deserialize(System.String,System.Type)">
+            <summary>
+            JSON deserialization with standardized settings.
+            </summary>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Json.Serialize(System.Object,System.Boolean)">
+            <summary>
+            JSON serialization with standardized settings.
+            </summary>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Json.Serialize``1(``0,MobileLabs.AirStream.Framework.Serialization.JsonFormatting)">
+            <summary>
+            JSON serialization with standardized settings.
+            </summary>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Json.Serialize(System.Object,Newtonsoft.Json.Serialization.IContractResolver)">
+            <summary>
+            JSON serialization with standardized settings.
+            </summary>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Json.SerializePretty(System.Object,System.Boolean)">
+            <summary>
+            JSON serialization with standardized settings and pretty-printing.
+            </summary>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Json.Serialize(System.Object,System.Collections.Generic.IList{Newtonsoft.Json.JsonConverter})">
+            <summary>
+            JSON serialization with standardized settings.
+            </summary>
+        </member>
+        <member name="T:MobileLabs.AirStream.Framework.Serialization.Plist">
+            <summary>
+            Provides utilities for parsing and generating XML plists.
+            </summary>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Plist.ToObject(System.Byte[])">
+            <summary>
+            Converts a binary plist document to an object.
+            </summary>
+            <param name="data">The raw plist data.</param>
+            <returns>An object.</returns>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Plist.ToObject(System.String)">
+            <summary>
+            Converts an XML plist document to an object.
+            </summary>
+            <param name="xml">The XML source text.</param>
+            <returns>An object.</returns>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Plist.ToObject(System.Xml.Linq.XDocument)">
+            <summary>
+            Converts a parsed XML plist document to an object.
+            </summary>
+            <param name="doc">The XML document.</param>
+            <returns>An object.</returns>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Plist.ToObject(System.Xml.Linq.XElement)">
+            <summary>
+            Converts an XElement describing a plist object to an object.
+            </summary>
+            <param name="element">
+            A dict, true, false, real, integer, string, 
+            data, or date XML element containing valid plist data.
+            </param>
+            <returns>
+            A dictionary, bool, double, long, string, byte[], or 
+            DateTime value, depending on the type of data.
+            </returns>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Plist.ToXml(System.Object,System.Boolean)">
+            <summary>
+            Converts an object to an XML plist.
+            
+            See notes in ResignDeviceControl. The jist of it is, at least
+            on iOS7, in an entitlements file, <false /> is invalid. It has to be
+            <false/> (no space). You may or may not need to fix it in post.
+            Or write it real clean like in here.
+            </summary>
+            <param name="plist"></param>
+            <param name="pretty"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Plist.ToXElement(System.Object)">
+            <summary>
+            Converts an object to its XML plist representation.
+            </summary>
+            <param name="plist"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Plist.WriteBinary(System.Object,System.IO.Stream)">
+            <summary>
+            Writes an object's binary plist representation to a stream.
+            </summary>
+            <param name="plist"></param>
+            <param name="ms"></param>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Plist.ReadBinary(System.IO.Stream)">
+            <summary>
+            Reads a binary plist from the given Stream. The Stream must be
+            seekable, and the binary plist must occur at the end of the stream.
+            This is required because binary plists have a "trailer" instead of
+            a header. It's recommended to use a MemoryStream.
+            </summary>
+            <param name="stream"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.SquishThem.Add(MobileLabs.AirStream.Framework.Serialization.SquishThem.SquishPath)">
+            <summary>Escaping is the responsibility of the caller.</summary>
+        </member>
+        <member name="T:MobileLabs.AirStream.Framework.Serialization.Uid">
+            <summary>
+            A unique identifier used in plist representations.
+            </summary>
+        </member>
+        <member name="P:MobileLabs.AirStream.Framework.Serialization.Uid.Value">
+            <summary>
+            A unique ID value.
+            </summary>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Serialization.Uid.#ctor(System.Int64)">
+            <summary>
+            Don't use this.
+            </summary>
+            <param name="value"></param>
         </member>
         <member name="T:MobileLabs.AirStream.Framework.Licensing.WindowsHardware">
             <summary>
@@ -1344,6 +1687,23 @@
             </summary>
             <param name="exitCode"></param>
         </member>
+        <member name="T:MobileLabs.AirStream.Framework.Protocol.AutoConnectService`1">
+            <summary>
+            Automatically establishes and maintains a connection to a service. If the connection to the
+            service is lost, reconnection will automatically be attempted as needed.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Protocol.AutoConnectService`1.#ctor(MobileLabs.AirStream.Protocol.IAirStreamLocalPeer,System.String,System.Int32,System.String,System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="localPeer">Ownership is not taken.</param>
+            <param name="host"></param>
+            <param name="port"></param>
+            <param name="serviceName"></param>
+            <param name="serviceVersion"></param>
+        </member>
         <member name="T:MobileLabs.AirStream.Framework.Protocol.InterfaceLearningContext">
             <summary>
             Tracks newly allocated short type IDs for the protocol interface
@@ -1370,37 +1730,6 @@
             the message serialization or send fails to ensure that learned IDs
             from failed messages don't pollute the learned ID list.
             </summary>
-        </member>
-        <member name="T:MobileLabs.AirStream.Framework.Reflection.TypeExtensions">
-            <summary>
-            Extensions to System.Type.
-            </summary>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Reflection.TypeExtensions.IsInstanceOfGenericType(System.Type,System.Type)">
-            <summary>
-            Determines whether a type is an instance of the given generic type definition.
-            Searches all implemented interfaces of the provided type,
-            and all base classes of the type, for a matching generic type definition.
-            </summary>
-            <param name="type">The type to check.</param>
-            <param name="genericTypeDefinition">The type of the generic type definition, e.g. typeof(IEnumerable&lt;&gt;)</param>
-            <returns>True if the type is an instance of the generic type, false otherwise.</returns>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Reflection.TypeExtensions.GetGenericTypeDefinitionInstance(System.Type,System.Type)">
-            <summary>
-            Finds a type in the given type's inheritance hierarchy (including both interfaces
-            and classes) which is an instance of the given generic type definition. 
-            </summary>
-            <param name="type">The type for which the generic type instance should be located.</param>
-            <param name="genericTypeDefinition">The generic type definition to search for.</param>
-            <returns>A type which instantiates the given generic type definition.</returns>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Reflection.TypeExtensions.GetStringConstants(System.Type)">
-            <summary>
-            Returns all public static const string fields from a static class.
-            </summary>
-            <param name="type"></param>
-            <returns></returns>
         </member>
         <member name="T:MobileLabs.AirStream.Framework.ScalarEventArgs`1">
             <summary>
@@ -1924,6 +2253,21 @@
             Restarts timeout timer and changes the timeout interval.
             </summary>
         </member>
+        <member name="T:MobileLabs.AirStream.Framework.Threading.ExponentialBackoffTimer">
+             <summary>
+             Exponential backoff wait timer to slow down retries of failed
+             operations. In its default state, does not wait. If Wait is called more
+             than once during the reset interval, each call will wait successively
+             more time, starting at the minimum wait and reaching a maximum retry
+             interval equal to the maximum wait. Each attempt doubles the wait
+             length. If the time between Wait returning and Wait being called again
+             is at least the reset interval, the state resets to the initial no-wait
+             state.
+            
+             If multiple threads call Wait, the behavior is nondeterministic, but
+             safe. Each thread will increase the shared wait interval.
+             </summary>
+        </member>
         <member name="T:MobileLabs.AirStream.Framework.Threading.LimitedConcurrencyLevelTaskScheduler">
             <summary>
             Provides a task scheduler which will only execute a certain number of
@@ -1995,6 +2339,14 @@
             <param name="result">The precomputed result.</param>
             <returns>A completed task.</returns>
         </member>
+        <member name="M:MobileLabs.AirStream.Framework.Threading.TaskEx.AsTask(System.Threading.CancellationToken)">
+            <summary>
+            Returns a Task that completes when the given cancellation token is
+            canceled.
+            </summary>
+            <param name="cancel"></param>
+            <returns></returns>
+        </member>
         <member name="M:MobileLabs.AirStream.Framework.Threading.TaskEx.DoOrDie``1(System.Threading.Tasks.Task{``0},System.Threading.CancellationToken,System.Action)">
             <summary>
             Wraps a task in another task which cancels itself if the supplied
@@ -2013,6 +2365,16 @@
             </param>
             <returns>Wrapper task.</returns>
         </member>
+        <member name="M:MobileLabs.AirStream.Framework.Threading.TaskEx.DoOrDie``1(System.Threading.Tasks.Task{``0},System.Threading.CancellationToken)">
+            <summary>
+            Wraps the inner task in one which is always cancelable. No cleanup
+            is performed of the underlying operation if cancellation occurs.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="inner"></param>
+            <param name="cancel"></param>
+            <returns></returns>
+        </member>
         <member name="M:MobileLabs.AirStream.Framework.Threading.TaskEx.DoOrDie(System.Threading.Tasks.Task,System.Threading.CancellationToken,System.Action)">
             <summary>
             Non-generic equivalent to DoOrDie&lt;T&gt;. Note that this throws
@@ -2022,6 +2384,15 @@
             <param name="inner"></param>
             <param name="cancel"></param>
             <param name="cleanup"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MobileLabs.AirStream.Framework.Threading.TaskEx.DoOrDie(System.Threading.Tasks.Task,System.Threading.CancellationToken)">
+            <summary>
+            Wraps the inner task in one which is always cancelable. No cleanup
+            is performed of the underlying operation if cancellation occurs.
+            </summary>
+            <param name="inner"></param>
+            <param name="cancel"></param>
             <returns></returns>
         </member>
         <member name="M:MobileLabs.AirStream.Framework.Threading.TaskEx.Forward(System.Threading.Tasks.Task,System.Threading.Tasks.TaskCompletionSource{System.Object})">
@@ -2049,7 +2420,7 @@
             </summary>
             <param name="task">The task which generates warning 4014</param>
         </member>
-        <member name="M:MobileLabs.AirStream.Framework.Threading.TaskEx.Forget(System.Threading.Tasks.Task,NLog.Logger,System.String)">
+        <member name="M:MobileLabs.AirStream.Framework.Threading.TaskEx.Forget(System.Threading.Tasks.Task,NLog.ILogger,System.String)">
             <summary>
             "Forget" and log exceptions.
             </summary>
@@ -2059,229 +2430,6 @@
             Returns true if the task has entered any of its completion states.
             </summary>
             <param name="task">The task</param>
-        </member>
-        <member name="T:MobileLabs.AirStream.Framework.Serialization.Csv">
-            <summary>
-            Serialize objects to and from CSV format.
-            </summary>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Csv.Serialize``1(``0[],MobileLabs.AirStream.Framework.Serialization.CsvOptions)">
-            <summary>
-            Serialize a collection of objects to CSV.
-            </summary>
-            <param name="objs"></param>
-            <param name="options"></param>
-            <typeparam name="T"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Csv.Serialize``1(``0[],System.Collections.Generic.Dictionary{System.String,System.String[]},MobileLabs.AirStream.Framework.Serialization.CsvOptions)">
-            <summary>
-            Serialize a collection of objects to CSV.
-            </summary>
-            <param name="objs"></param>
-            <param name="flattenColumns"></param>
-            <param name="options"></param>
-            <typeparam name="T"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Csv.Parse(System.String)">
-            <summary>
-            
-            </summary>
-            <param name="csv"></param>
-            <returns></returns>
-            <exception cref="T:System.FormatException"></exception>
-            /// <exception cref="T:System.ArgumentNullException"></exception>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Csv.Deserialize``1(System.String,MobileLabs.AirStream.Framework.Serialization.CsvOptions)">
-            <summary>
-            
-            </summary>
-            <param name="csv"></param>
-            <param name="options"></param>
-            <typeparam name="T"></typeparam>
-            <returns></returns>
-            <exception cref="T:System.FormatException"></exception>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Csv.FormatValue(System.Object,System.Boolean)">
-            <summary>
-            Formats a value to the expectations of a CSV cell.
-            </summary>
-            <param name="o"></param>
-            <param name="quoted"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Csv.GetMimeType(MobileLabs.AirStream.Framework.Serialization.CsvOptions)">
-            <summary>
-            Return the MIME type given the provided options set.
-            </summary>
-            <param name="options"></param>
-            <returns></returns>
-        </member>
-        <member name="T:MobileLabs.AirStream.Framework.Serialization.Csv.FlattenAttribute">
-            <summary>
-            Use this in addition to the flattenColumns argument to
-            cause a Dictionary&lt;string, object&gt; to flatten into
-            column rows.
-            ie, your dictionary is named "flattenme" and contains
-            { foo: "bar", blah: "baz" }
-            Then for flattenColumns you'd pass { flattenme: ["foo", "blah"] }
-            and the columns "foo" and "blah" are included in the serialization.
-            
-            Properties that are flattened can not be deserialized.
-            </summary>
-        </member>
-        <member name="T:MobileLabs.AirStream.Framework.Serialization.CsvOptions">
-            <summary>
-            Options for the CSV serializations
-            </summary>
-        </member>
-        <member name="F:MobileLabs.AirStream.Framework.Serialization.CsvOptions.None">
-            <summary>
-            No CSV options specified.
-            </summary>
-        </member>
-        <member name="F:MobileLabs.AirStream.Framework.Serialization.CsvOptions.HeaderRow">
-            <summary>
-            Skip the first line. Used for skipping header rows.
-            </summary>
-        </member>
-        <member name="T:MobileLabs.AirStream.Framework.Serialization.Json">
-            <summary>
-            JSON serialization with standardized settings.
-            </summary>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Json.GetJsonSettings(Newtonsoft.Json.Serialization.IContractResolver)">
-            <summary>
-            JSON serialization with standardized settings.
-            </summary>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Json.Deserialize``1(System.String)">
-            <summary>
-            JSON deserialization with standardized settings.
-            </summary>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Json.Deserialize(System.String,System.Type)">
-            <summary>
-            JSON deserialization with standardized settings.
-            </summary>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Json.Serialize(System.Object,System.Boolean)">
-            <summary>
-            JSON serialization with standardized settings.
-            </summary>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Json.Serialize(System.Object,MobileLabs.AirStream.Framework.Serialization.JsonFormatting)">
-            <summary>
-            JSON serialization with standardized settings.
-            </summary>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Json.Serialize(System.Object,Newtonsoft.Json.Serialization.IContractResolver)">
-            <summary>
-            JSON serialization with standardized settings.
-            </summary>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Json.SerializePretty(System.Object,System.Boolean)">
-            <summary>
-            JSON serialization with standardized settings and pretty-printing.
-            </summary>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Json.Serialize(System.Object,System.Collections.Generic.IList{Newtonsoft.Json.JsonConverter})">
-            <summary>
-            JSON serialization with standardized settings.
-            </summary>
-        </member>
-        <member name="T:MobileLabs.AirStream.Framework.Serialization.Plist">
-            <summary>
-            Provides utilities for parsing and generating XML plists.
-            </summary>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Plist.ToObject(System.Byte[])">
-            <summary>
-            Converts a binary plist document to an object.
-            </summary>
-            <param name="data">The raw plist data.</param>
-            <returns>An object.</returns>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Plist.ToObject(System.String)">
-            <summary>
-            Converts an XML plist document to an object.
-            </summary>
-            <param name="xml">The XML source text.</param>
-            <returns>An object.</returns>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Plist.ToObject(System.Xml.Linq.XDocument)">
-            <summary>
-            Converts a parsed XML plist document to an object.
-            </summary>
-            <param name="doc">The XML document.</param>
-            <returns>An object.</returns>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Plist.ToObject(System.Xml.Linq.XElement)">
-            <summary>
-            Converts an XElement describing a plist object to an object.
-            </summary>
-            <param name="element">
-            A dict, true, false, real, integer, string, 
-            data, or date XML element containing valid plist data.
-            </param>
-            <returns>
-            A dictionary, bool, double, long, string, byte[], or 
-            DateTime value, depending on the type of data.
-            </returns>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Plist.ToXml(System.Object,System.Boolean)">
-            <summary>
-            Converts an object to an XML plist.
-            
-            See notes in ResignDeviceControl. The jist of it is, at least
-            on iOS7, in an entitlements file, <false /> is invalid. It has to be
-            <false/> (no space). You may or may not need to fix it in post.
-            Or write it real clean like in here.
-            </summary>
-            <param name="plist"></param>
-            <param name="pretty"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Plist.ToXElement(System.Object)">
-            <summary>
-            Converts an object to its XML plist representation.
-            </summary>
-            <param name="plist"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Plist.WriteBinary(System.Object,System.IO.Stream)">
-            <summary>
-            Writes an object's binary plist representation to a stream.
-            </summary>
-            <param name="plist"></param>
-            <param name="ms"></param>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Plist.ReadBinary(System.IO.Stream)">
-            <summary>
-            Reads a binary plist from the given Stream. The Stream must be
-            seekable, and the binary plist must occur at the end of the stream.
-            This is required because binary plists have a "trailer" instead of
-            a header. It's recommended to use a MemoryStream.
-            </summary>
-            <param name="stream"></param>
-            <returns></returns>
-        </member>
-        <member name="T:MobileLabs.AirStream.Framework.Serialization.Uid">
-            <summary>
-            A unique identifier used in plist representations.
-            </summary>
-        </member>
-        <member name="P:MobileLabs.AirStream.Framework.Serialization.Uid.Value">
-            <summary>
-            A unique ID value.
-            </summary>
-        </member>
-        <member name="M:MobileLabs.AirStream.Framework.Serialization.Uid.#ctor(System.Int64)">
-            <summary>
-            Don't use this.
-            </summary>
-            <param name="value"></param>
         </member>
         <member name="T:MobileLabs.AirStream.Framework.Text.CaseInsensitiveStringComparer">
             <summary>
@@ -2472,23 +2620,6 @@
             </summary>
             <param name="fault">The fault description.</param>
         </member>
-        <member name="T:MobileLabs.AirStream.Protocol.AutoConnectService`1">
-            <summary>
-            Automatically establishes and maintains a connection to a service. If the connection to the
-            service is lost, reconnection will automatically be attempted as needed.
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="M:MobileLabs.AirStream.Protocol.AutoConnectService`1.#ctor(MobileLabs.AirStream.Protocol.IAirStreamLocalPeer,System.String,System.Int32,System.String,System.Int32)">
-            <summary>
-            
-            </summary>
-            <param name="localPeer">Ownership is not taken.</param>
-            <param name="host"></param>
-            <param name="port"></param>
-            <param name="serviceName"></param>
-            <param name="serviceVersion"></param>
-        </member>
         <member name="T:MobileLabs.AirStream.Protocol.Codec">
             <summary>
             Utility methods for reading and writing binary data.
@@ -2596,6 +2727,11 @@
         <member name="E:MobileLabs.AirStream.Protocol.IAirStreamRemotePeer.Disconnected">
             <summary>
             Fired when it becomes known that the remote peer was disconnected.
+            </summary>
+        </member>
+        <member name="P:MobileLabs.AirStream.Protocol.IAirStreamRemotePeer.Type">
+            <summary>
+            The type of connection, either TCP or Unix socket.
             </summary>
         </member>
         <member name="T:MobileLabs.AirStream.Protocol.IFaultDescription">
@@ -2895,6 +3031,11 @@
         <member name="F:MobileLabs.AirStream.Protocol.ServiceOperationContext.RemotePeer">
             <summary>
             The remote peer which initiated the current operation.
+            </summary>
+        </member>
+        <member name="T:MobileLabs.AirStream.Web.MVC.AntiXss.StringsJsonConverter">
+            <summary>
+            Escape all XSS script inclusions from rendered JSON
             </summary>
         </member>
     </members>
