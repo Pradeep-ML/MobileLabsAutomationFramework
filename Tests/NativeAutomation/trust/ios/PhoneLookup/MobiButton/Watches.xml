@@ -1,0 +1,7 @@
+﻿<Properties>
+  <WatchEntry0 value="objTestObject" />
+  <WatchEntry1 value="strCoordsOption" />
+  <WatchEntry2 value="intX" />
+  <WatchEntry3 value="intY" />
+  <WatchEntry4 value="objTestObject.GetROProperty(&quot;width&quot;)" />
+</Properties>

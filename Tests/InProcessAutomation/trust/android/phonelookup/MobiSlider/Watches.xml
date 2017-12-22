@@ -1,0 +1,8 @@
+﻿<Properties>
+  <WatchEntry0 value="UBound(arrProperties)" />
+  <WatchEntry1 value="strTOValue" />
+  <WatchEntry2 value="arrProperties" />
+  <WatchEntry3 value="strTOValueUpdated" />
+  <WatchEntry4 value="arrProperties(intArrIndex)" />
+  <WatchEntry5 value="strTOValueOriginal" />
+</Properties>
