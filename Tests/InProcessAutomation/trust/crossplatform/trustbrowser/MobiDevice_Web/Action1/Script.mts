@@ -90,7 +90,14 @@ wait 3
 
 Set ObjToVerify = MobiDevice("Web Browser").MobiWebLink("lnkMobileLabs")
 Set ObjTest = MobiDevice("Web Browser").MobiWebView("WebView").MobiWebLink("Customer Login")
-Set ObjBack_Button = MobiDevice("Web Browser").MobiButton("btnBack_TB")
+'Set ObjBack_Button = MobiDevice("Web Browser").MobiButton("btnBack_TB")
+If MobiDevice("Web Browser").GetROProperty("nativeautomation")=True Then
+	Set ObjBack_Button = MobiDevice("name:=Trust Browser").MobiButton("Visible:=True","index:=0")
+Else 
+	Set ObjBack_Button = MobiDevice("name:=Trust Browser").MobiButton("Visible:=True","index:=1")
+End If
+
+
 
 
 ' Step 116   Verify back functionality on TrustBrowser & preserve history of visited pages
