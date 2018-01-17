@@ -6,23 +6,21 @@ Option Explicit
 Dim blnAddInFound
 Dim strCurrentPath
 Dim blnParentFolderFound
-Dim strMasterExecutionPath
+Dim strTestSetPath
 Dim StartTime
 Dim objQTP
 Dim objWScript
 Dim objFSO
-Dim objExcel
-Dim objWorkbook
-Dim objWorksheet
+Dim objFile,objFile1
 Dim intColCount
 Dim blnValueFound
 Dim strExecutionPath
 Dim strProcessesToKill
 Dim arrProcessesToKill
 Dim intCounter
-Dim i,j,k,n,o,p,q,r
+Dim i,j,k,n,o,p,q,r,s,t
 Dim arrTests
-Dim strTestPath
+Dim strTestPath,strTestDataPath
 Dim strRootPath
 Dim objQTPResultsOpt
 Dim strAddIns
@@ -34,7 +32,9 @@ Dim blnNotifications
 Dim strSubject,strMessage,strEmailIds
 Dim intRowCount
 Dim blnEmailSent,strAttachmentPath
+Dim strData,strTestData,arrData,arr2Data(),arrTestData
 Dim strBuild,strdCUser,strDeviceModel,strDeviceOS,strDeviceOSVersion,strTestSet,strAppId,strdCIP
+Const ForReading = 1
 
 If WScript.Arguments.length = 0 Then
    Set objShell = CreateObject("Shell.Application")
@@ -43,60 +43,82 @@ If WScript.Arguments.length = 0 Then
    Set objShell = Nothing
 Else
 
-strProcessesToKill = "cmd.exe,EXCEL.EXE,deviceViewer.exe,QTPro.exe,QTAutomationHost.exe,UFT.exe"
-arrProcessesToKill = Split(strProcessesToKill,",")
-
-KillProcess arrProcessesToKill
-
-'Get current directory
-Set objWScript = CreateObject("WScript.Shell")
-Set objFSO = CreateObject("Scripting.FileSystemObject")
-strCurrentPath = WScript.ScriptFullName
-strRootPath = strCurrentPath
-
-'Loop until "MobileLabs Automation Framework" folder is found
-blnParentFolderFound = True
-Do While LCase(Replace(Split(strRootPath,"\")(UBound(Split(strRootPath,"\"))), " ", "")) <> "mobilelabsautomationframework"
-	strRootPath = objFSO.GetParentFolderName(strRootPath)
-	'Exit if reaches the system drive
-	If InStr(1, strRootPath, "\") = 0 Then
-		blnParentFolderFound = False
-		Exit Do
-	End If
-Loop
-
-'Define the path of the Root Folder: <MobileLabs Automation Framework>
-If blnParentFolderFound Then
-	If Right(strRootPath,1) <> "\" Then
-		strRootPath = strRootPath & "\"
-	End If
-	If Replace(objFSO.GetFolder(strRootPath).Name, " ", "") <> "MobileLabsAutomationFramework" Then
+	strProcessesToKill = "cmd.exe,EXCEL.EXE,deviceViewer.exe,QTPro.exe,QTAutomationHost.exe,UFT.exe"
+	arrProcessesToKill = Split(strProcessesToKill,",")
+	
+	KillProcess arrProcessesToKill
+	
+	'Get current directory
+	Set objWScript = CreateObject("WScript.Shell")
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	strCurrentPath = WScript.ScriptFullName
+	strRootPath = strCurrentPath
+	
+	'Loop until "MobileLabs Automation Framework" folder is found
+	blnParentFolderFound = True
+	Do While LCase(Replace(Split(strRootPath,"\")(UBound(Split(strRootPath,"\"))), " ", "")) <> "mobilelabsautomationframework"
+		strRootPath = objFSO.GetParentFolderName(strRootPath)
+		'Exit if reaches the system drive
+		If InStr(1, strRootPath, "\") = 0 Then
+			blnParentFolderFound = False
+			Exit Do
+		End If
+	Loop
+	
+	'Define the path of the Root Folder: <MobileLabs Automation Framework>
+	If blnParentFolderFound Then
+		If Right(strRootPath,1) <> "\" Then
+			strRootPath = strRootPath & "\"
+		End If
+		If Replace(objFSO.GetFolder(strRootPath).Name, " ", "") <> "MobileLabsAutomationFramework" Then
+			WScript.Quit
+		End If
+	Else
+		MsgBox "Error: ExecuteTestSet.vbs file is being executed from a wrong location: " & objWScript.CurrentDirectory
 		WScript.Quit
 	End If
-Else
-	MsgBox "Error: ExecuteTestSet.vbs file is being executed from a wrong location: " & objWScript.CurrentDirectory
-	WScript.Quit
-End If
 
-'Read values from TestLab.xlsx
-strMasterExecutionPath = strRootPath & "Environment\TestLab.xlsx"
-Set objExcel = CreateObject("Excel.Application")
-objExcel.Visible = False
-Set objWorkbook = objExcel.Workbooks.Open(strMasterExecutionPath)	
-Set objWorksheet = objExcel.ActiveWorkbook.Worksheets("TestSet")
-
-intColCount = objWorksheet.UsedRange.Columns.Count
+	'Read values from TestSet.txt
+	strTestSetPath = strRootPath & "Environment\TestSet.txt"
+	strTestDataPath = strRootPath & "Environment\TestData.txt"
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	Set objFile = objFSO.OpenTextFile(strTestSetPath, ForReading, False)
+	
+	strData = ""
+	'Read all lines from TestSet.txt and store them in strData
+	Do While objFile.AtEndOfStream <> True
+		strData = strData & objFile.ReadLine() & ","
+	Loop
+	
+	objFile.Close
+	
+	'Pull the data out of strData and store in a 1D array arrData
+	strData = Left(strData,Len(strData)-1)
+	arrData = Split(strData, ",", -1, 1)
+	
+	'Pull the data out of arrData and store it in a 2D array arr2Data
+	ReDim arr2Data(UBound(arrData),1)
+	
+	For s = 0 To UBound(arrData)
+		If arrData(s) <> "" Then
+			arr2Data(s,0) = Split(arrData(s),"=",-1)(0)
+			arr2Data(s,1) = Split(arrData(s),"=",-1)(1)
+		End If
+	Next
+	
+	'Get values of all variables from arr2Data
+	intColCount = UBound(arr2Data)
 	blnValueFound = True
 	trustNeeded = False
 	strAddIns = ""
-	For i = 1 To intColCount
-		If LCase(objWorksheet.Cells(1,i).Value) = "addins" Then
-			strAddIns = objWorksheet.Cells(2,i).Value
-			
+	For i = 0 To intColCount
+		If LCase(arr2Data(i,0)) = "addins" Then
+			strAddIns = arr2Data(i,1)
+				
 			If InStr(1,strAddIns,"Mobile Labs Trust",1) Then
 				trustNeeded = True
 			End If
-			
+				
 			o = 0
 			For Each item in Split(strAddIns,",")
 				Redim Preserve arrAddIns(o)
@@ -109,165 +131,136 @@ intColCount = objWorksheet.UsedRange.Columns.Count
 			blnValueFound = False
 		End If
 	Next
+		
+	If Not(blnValueFound) Then
+		MsgBox "Couldn't find the list of AddIns to load. Please check TestSet.txt and add a correct value under addIns!"
+	End If
 	
-If Not(blnValueFound) Then
-	MsgBox "Couldn't find the list of AddIns to load. Please check TestLab.xlsx and add a correct value under addIns!"
-End If
-
-Set objWorksheet = objExcel.ActiveWorkbook.Worksheets("TestSet")
-intColCount = objWorksheet.UsedRange.Columns.Count
-blnNotifications = False
-	For p = 1 To intColCount
-		If LCase(objWorksheet.Cells(1,p).Value) = "emailnotifications" Then
-			blnNotifications = objWorksheet.Cells(2,p).Value
-			
+	blnNotifications = False
+	For p = 0 To intColCount
+		If LCase(arr2Data(p,0)) = "emailnotifications" Then
+			blnNotifications = arr2Data(p,1)
+				
 			If blnNotifications = "" Then
 				blnNotifications = False
 			End If
-		ElseIf LCase(objWorksheet.Cells(1,p).Value) = "dcversion" Then
-			strBuild = objWorksheet.Cells(2,p).Value
+		ElseIf LCase(arr2Data(p,0)) = "dcversion" Then
+			strBuild = arr2Data(p,1)
+				
+		ElseIf LCase(arr2Data(p,0)) = "dcip" Then
+			strdCIP = arr2Data(p,1)
 			
-		ElseIf LCase(objWorksheet.Cells(1,p).Value) = "dcip" Then
-			strdCIP = objWorksheet.Cells(2,p).Value
-		
-		ElseIf LCase(objWorksheet.Cells(1,p).Value) = "dcuser" Then
-			strdCUser = objWorksheet.Cells(2,p).Value
-		
-		ElseIf LCase(objWorksheet.Cells(1,p).Value) = "devicemodel" Then
-			strDeviceModel = objWorksheet.Cells(2,p).Value
+		ElseIf LCase(arr2Data(p,0)) = "dcuser" Then
+			strdCUser = arr2Data(p,1)
 			
-		ElseIf LCase(objWorksheet.Cells(1,p).Value) = "deviceos" Then
-			strDeviceOS = objWorksheet.Cells(2,p).Value
-		
-		ElseIf LCase(objWorksheet.Cells(1,p).Value) = "deviceosversion" Then
-			strDeviceOSVersion = objWorksheet.Cells(2,p).Value
-		
-		ElseIf LCase(objWorksheet.Cells(1,p).Value) = "testfolder" Then
-			strTestSet = objWorksheet.Cells(2,p).Value
-		
-		ElseIf LCase(objWorksheet.Cells(1,p).Value) = "appid" Then
-			strAppId = objWorksheet.Cells(2,p).Value
+		ElseIf LCase(arr2Data(p,0)) = "devicemodel" Then
+			strDeviceModel = arr2Data(p,1)
+				
+		ElseIf LCase(arr2Data(p,0)) = "deviceos" Then
+			strDeviceOS = arr2Data(p,1)
+			
+		ElseIf LCase(arr2Data(p,0)) = "deviceosversion" Then
+			strDeviceOSVersion = arr2Data(p,1)
+			
+		ElseIf LCase(arr2Data(p,0)) = "testfolder" Then
+			strTestSet = arr2Data(p,1)
+			
+		ElseIf LCase(arr2Data(p,0)) = "appid" Then
+			strAppId = arr2Data(p,1)
 		End If
 	Next
+		
+	'Send email notifiction about test execution being started
+	If blnNotifications Then
+		Set objFile1 = objFSO.OpenTextFile(strTestDataPath, ForReading, False)
+		
+		strTestData = ""
+		Do While objFile1.AtEndOfStream <> True
+			strTestData = strTestData & objFile1.ReadLine() & ","
+		Loop
+		
+		objFile1.Close
+
+		'Read email ids from TestData.txt
+		strTestData = Replace(Replace(Replace(strTestData,"],","]"),",*","*"),"*,","*")
+		arrTestData = Split(strTestData, "****", -1, 1)
+		
+		strEmailIds = ""
+		For t = 0 To UBound(arrTestData)
+			If InStr(1,arrTestData(t),"[emailIds]",1) > 0 Then
+				strEmailIds = Split(arrTestData(t),"[emailIds]", -1, 1)(1)
+			End If	
+		Next
+		
+		If strEmailIds <> "" Then
+			strEmailIds = Trim(Left(strEmailIds,Len(strEmailIds)-1))
+		End If
+			
+		strSubject = "Test execution started!"
+		strMessage = "Start Time:" & Time & VBNewLine & "dC Server: " & strdCIP & VbNewLine & "dC version: " & strBuild & VbNewLine & "Username: " & strdCUser _
+		& VbNewLine & "Device Model: " & strDeviceModel & VbNewLine & "Device OS: " & strDeviceOS & VbNewLine & "Device OS Version: " & strDeviceOSVersion _
+		& VbNewLine & "Test Set: " & strTestSet & VbNewLine & "App under test: " & strAppId & VbNewLine & VbNewLine & "System Information:" & VbNewLine _
+		& GetSystemInfo
+
+		SendNotification strSubject, strMessage, strEmailIds, ""	
+	End If
 	
-'Send email for execution start
-If blnNotifications Then
-	Set objWorksheet = objExcel.ActiveWorkbook.Worksheets("Data")
-	intColCount = objWorksheet.UsedRange.Columns.Count
-	strEmailIds = ""
-	r = 2
-	intRowCount = objWorksheet.UsedRange.Rows.Count
-		For q = 1 To intColCount
-			If LCase(objWorksheet.Cells(1,q).Value) = "emailids" Then				
-				For r=2 To intRowCount-1
-					strEmailIds = strEmailIds & objWorksheet.Cells(r,q).Value & ","
-					
-					If objWorksheet.Cells(r,q).Value = "" Then
-						Exit For
-					End If
-				Next
+	'Create an instance of QTP
+	Set objQTP = CreateObject("QuickTest.Application")
+	'Load required Add-ins
+	objQTP.SetActiveAddins arrAddIns
+	
+	objQTP.Launch
+	objQTP.Visible = True
+	objQTP.WindowState = "Maximized" 'Maximizes the application window of the QTP 
+	objQTP.ActivateView "ExpertView" 'Displays the Expert View of the QTP
+	objQTP.Options.Run.ViewResults = False
+	
+	'Report settings
+	objQTP.Options.Run.ImageCaptureForTestResults = "OnError"
+	objQTP.Options.Run.ViewResults = False
+	
+	'Check if Mobile Labs Trust is installed or not
+	If trustNeeded Then
+		blnAddInFound = False
+		For intCounter = 1 To objQTP.Addins.Count
+			If StrComp(Replace(objQTP.Addins.Item(intCounter).Name, " ", ""),  "mobilelabstrust", 1) = 0 Then
+				blnAddInFound = True
+				Exit For
 			End If
 		Next
-	If strEmailIds <> "" Then
-		strEmailIds = Trim(Left(strEmailIds,Len(strEmailIds)-1))
-	End If
-		
-	strSubject = "Test execution started!"
-	strMessage = "Start Time:" & Time & VBNewLine & "dC Server: " & strdCIP & VbNewLine & "dC version: " & strBuild & VbNewLine & "Username: " & strdCUser _
-	& VbNewLine & "Device Model: " & strDeviceModel & VbNewLine & "Device OS: " & strDeviceOS & VbNewLine & "Device OS Version: " & strDeviceOSVersion _
-	& VbNewLine & "Test Set: " & strTestSet & VbNewLine & "App under test: " & strAppId & VbNewLine & VbNewLine & "System Information:" & VbNewLine _
-	& GetSystemInfo
-		
-	'strAttachmentPath = strRootPath & "\Results\Attachment.zip"
-	SendNotification strSubject, strMessage, strEmailIds, ""	
-End If
-
-'Create an instance of QTP
-Set objQTP = CreateObject("QuickTest.Application")
-'Load required Add-ins
-objQTP.SetActiveAddins arrAddIns
-'For n=0 To UBound(arrAddIns)
-	'MsgBox "Addin:" & arrAddIns(n)
-	'objQTP.SetActiveAddins Array(arrAddIns(n))
-'Next
-
-objQTP.Launch
-objQTP.Visible = True
-objQTP.WindowState = "Maximized" 'Maximizes the application window of the QTP 
-objQTP.ActivateView "ExpertView" 'Displays the Expert View of the QTP
-objQTP.Options.Run.ViewResults = False
-
-'Report settings
-objQTP.Options.Run.ImageCaptureForTestResults = "OnError"
-objQTP.Options.Run.ViewResults = False
-
-'Check if Mobile Labs Trust is installed or not
-If trustNeeded Then
-	blnAddInFound = False
-	For intCounter = 1 To objQTP.Addins.Count
-		If StrComp(Replace(objQTP.Addins.Item(intCounter).Name, " ", ""),  "mobilelabstrust", 1) = 0 Then
-			blnAddInFound = True
-			Exit For
+	
+		If Not(blnAddInFound) Then
+			MsgBox "Mobile Labs Trust was not found in the installed add-ins list."
+			objQTP.Quit
 		End If
-	Next
-
-	If Not(blnAddInFound) Then
-		MsgBox "Mobile Labs Trust was not found in the installed add-ins list."
-		objQTP.Quit
 	End If
-End If
-
-'If Not(blnAddInFound) Then
-	'MsgBox "Mobile Labs Trust was not found in the installed add-ins list."
-	'objQTP.Quit
-'Else
 	
-	'Execute all tests in the testFolder defined in %\MobileLabsAutomationFramework\Environment\TestLab.xlsx
-	'strMasterExecutionPath = strRootPath & "Environment\TestLab.xlsx"
-	'Set objExcel = CreateObject("Excel.Application")
-	'objExcel.Visible = False
-	'Set objWorkbook = objExcel.Workbooks.Open(strMasterExecutionPath)	
-	'Set objWorksheet = objExcel.ActiveWorkbook.Worksheets("TestSet")
-	
-	'Get the max column occupied in the excel file 
-	Set objWorksheet = objExcel.ActiveWorkbook.Worksheets("TestSet")
-	intColCount = objWorksheet.UsedRange.Columns.Count
-	blnValueFound = True
+	'Get all UFT tests from the location contained in strTestSet
 	strExecutionPath = ""
-	For k = 1 To intColCount
-		If LCase(objWorksheet.Cells(1,k).Value) = "testfolder" Then
-			strTestPath = objWorksheet.Cells(2,k).Value
-			If Left(strTestPath,1) = "\" Then
-				strTestPath = Right(strTestPath,Len(strTestPath)-1)
-			End If
-			strExecutionPath = strRootPath & strTestPath
-			Exit For
-		End If
-		If k = intColCount Then
-			blnValueFound = False
-		End If
-	Next
-	
-	If blnValueFound Then
-		arrTests = GetTestSet(strExecutionPath)
+	strTestPath = Right(strTestSet,Len(strTestSet)-1)
+	strExecutionPath = strRootPath & strTestSet
 		
+	If strExecutionPath <> "" Then
+		arrTests = GetTestSet(strExecutionPath)
+			
 		For j = 0 To UBound(arrTests)	
 			'Open a test and associate a function library to the test
 			objQTP.Open arrTests(j),False
 			objQTP.Test.Settings.Run.OnError = "NextStep"
-			
+				
 			'Set the function libraries and ORs folders in Tools > Options > GUI Testing > Folders
 			objQTP.Folders.RemoveAll
 			objQTP.Folders.Add strRootPath & "FunctionLibraries"
 			objQTP.Folders.Add strRootPath & "ORs"
-			
+				
 			' Set the results location
 			Set objQTPResultsOpt = CreateObject("QuickTest.RunResultsOptions") ' Create the Run Results Options object
 			objQTPResultsOpt.ResultsLocation = WScript.CreateObject("Scripting.FileSystemObject").GetSpecialFolder(2) & "\QTPtempResults\" 
-			
+				
 			'Execute the test
 			objQTP.Test.Run objQTPResultsOpt
-			
+				
 			StartTime = Minute(Now)
 			Do While objQTP.Test.IsRunning
 				objWScript.Sleep 10000
@@ -279,37 +272,33 @@ End If
 					Exit Do
 				End If
 			Loop
-		
+			
 		Next
-		
+			
 		strSubject = "Test execution completed!"
 		strMessage = "End Time:" & Time & VBNewLine & "dC Server: " & strdCIP & VbNewLine & "dC version: " & strBuild & VbNewLine & "Username: " & strdCUser _
 		& VbNewLine & "Device Model: " & strDeviceModel & VbNewLine & "Device OS: " & strDeviceOS & VbNewLine & "Device OS Version: " & strDeviceOSVersion _
 		& VbNewLine & "Test Set: " & strTestSet & VbNewLine & "App under test: " & strAppId & VbNewLine & VbNewLine & "System Information:" & VbNewLine _
 		& GetSystemInfo
-			
+				
 		strAttachmentPath = strRootPath & "\Results\Attachment.zip"
 		SendNotification strSubject, strMessage, strEmailIds, strAttachmentPath
-		
+			
 	Else
-		MsgBox "Did not find the testFolder column in " & strMasterExecutionPath & " please check the file. Exiting...!!"
+		MsgBox "Did not find the testFolder column in " & strTestSetPath & " please check the file. Exiting...!!"
 		WScript.Quit
 	End If
-
-	objWorkbook.Close
-	objExcel.Quit
-
-	Set objWorksheet = Nothing
-	Set objWorkbook = Nothing
-	Set objExcel = Nothing
+	
+	Set objFile = Nothing
+	Set objFile = Nothing
 	Set objFSO = Nothing
 	Set objWScript = Nothing
-
+	
 	'Close QTP
 	objQTP.Quit
 	Set objQTPResultsOpt = Nothing
 	Set objQTP = Nothing
-'End If
+
 End If
 
 '##########################################################################################################################
@@ -389,7 +378,7 @@ End Sub
 	
 '##########################################################################################################################
 ''@Sub:        		SendNotification
-''@Description: 	Sends an email with passed in message to a specific set of email Ids
+''@Description: 	Sends an email with passed in message to a specific set of email Ids byt using Google's SMTP
 ''@Created By: 		Naveen
 ''@Created On: 		28-Mar-2017
 ''--------------------------------------------------------------------------------------------------------------------------
