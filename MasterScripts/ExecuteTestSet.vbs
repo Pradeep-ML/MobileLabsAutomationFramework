@@ -25,6 +25,8 @@ Dim strRootPath
 Dim objQTPResultsOpt
 Dim strAddIns
 Dim trustNeeded
+Dim strIP 
+Dim colItems1 
 Dim arrAddIns()
 Dim item
 Dim objShell
