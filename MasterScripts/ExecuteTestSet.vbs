@@ -87,14 +87,14 @@ Else
 	strData = ""
 	'Read all lines from TestSet.txt and store them in strData
 	Do While objFile.AtEndOfStream <> True
-		strData = strData & objFile.ReadLine() & ","
+		strData = strData & objFile.ReadLine() & "^"
 	Loop
 	
 	objFile.Close
 	
 	'Pull the data out of strData and store in a 1D array arrData
 	strData = Left(strData,Len(strData)-1)
-	arrData = Split(strData, ",", -1, 1)
+	arrData = Split(strData, "^", -1, 1)
 	
 	'Pull the data out of arrData and store it in a 2D array arr2Data
 	ReDim arr2Data(UBound(arrData),1)
