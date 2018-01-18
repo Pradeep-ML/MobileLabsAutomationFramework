@@ -110,7 +110,7 @@ Spice Mi-498
 \Tests\LoadTests
 \Tests\Temp
 \Tests\InProcessAutomation\trust\android\others
-Tests\InProcessAutomation\trust\android\phonelookup
+\Tests\InProcessAutomation\trust\android\phonelookup
 \Tests\InProcessAutomation\trust\crossplatform\trustbrowser
 \Tests\InProcessAutomation\trust\ios\phonelookup
 \Tests\InProcessAutomation\trust\ios\TapToZoom
