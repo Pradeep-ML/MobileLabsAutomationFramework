@@ -494,6 +494,14 @@ Function GetSystemInfo()
 	   Next
 	Next
 	
+	Set colItems1 = objWMIService.ExecQuery("Select * From Win32_NetworkAdapterConfiguration Where IPEnabled = True")
+	
+	For Each Item in colitems1
+		strIP = Item.IPAddress(0)
+	Next
+	
+	strSystemInfo = strSystemInfo & "Machine IP: " & strIP
+	
 	GetSystemInfo = strSystemInfo
 	
 	Set objWMIService = Nothing
