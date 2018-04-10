@@ -1,0 +1,17 @@
+TestFolders=
+\Tests\Installer_TBD,
+\Tests\LoadTests,
+\Tests\Temp,
+\Tests\InProcessAutomation\trust\android\others,
+Tests\InProcessAutomation\trust\android\phonelookup,
+\Tests\InProcessAutomation\trust\crossplatform\trustbrowser,
+\Tests\InProcessAutomation\trust\ios\phonelookup,
+\Tests\InProcessAutomation\trust\ios\TapToZoom,
+\Tests\InProcessAutomation\trust\ios\uicatalog,
+\Tests\miscellaneous\android,
+\Tests\miscellaneous\crossplatform\desktopviewer,
+\Tests\miscellaneous\ios,
+\Tests\NativeAutomation\trust\android\phonelookup,
+\Tests\NativeAutomation\trust\crossplatform\trustbrowser,
+\Tests\NativeAutomation\trust\ios\PhoneLookup,
+\Tests\NativeAutomation\trust\ios\UICatalog

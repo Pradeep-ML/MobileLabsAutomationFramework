@@ -1,0 +1,137 @@
+[AppID]
+com.android.controls/.SplashScreen
+com.example.apple-samplecode.UICatalog
+com.example.apple-samplecode.UICatalog5
+com.mobilelabs.PhoneLookup
+com.mobilelabs.PhoneLookup-iOS5
+com.mobilelabsinc.deviceControl
+com.mobilelabsinc.deviceControl/com.mobilelabsinc.devicecontrol.MainActivity
+com.mobilelabsinc.Trust-Browser
+com.mobilelabsinc.trustbrowser/com.mobilelabsinc.trustbrowser.MainActivity
+com.android.controls/com.android.controls.SplashScreen
+com.android.chrome/org.chromium.chrome.browser.document.ChromeLauncherActivity
+****
+[deviceOS]
+Android
+iOS
+****
+[deviceFriendlyModel]
+Canvas 4
+Desire HD
+Fire Phone
+Galaxy A5
+Galaxy Note 8
+Galaxy S
+Galaxy S Captivate
+Galaxy S3
+Galaxy S3 Mini
+Galaxy S4 Mini
+Galaxy S6
+GalaxyS7
+Galaxy S8
+Galaxy Tab 2
+Galaxy Tab 3
+Galaxy Tab 7
+GT-I9500
+GT-I9505
+GT-I9192
+HTC One E9s dual sim
+HTC Droid Incredible
+HTC Flyer P510e
+HTC One_M8
+HTC One V
+iPad 1
+iPad 2
+iPad 3
+iPad 4
+iPad Air
+iPad Air 2
+iPad mini
+iPad mini 1G
+iPad mini 2
+iPad mini 3
+iPad mini 4
+iPad Pro
+iPad Pro (9.7-inch)
+iPad Pro (10.5-inch)
+iPad Pro (12.9-inch)
+iPhoneSE
+iPhone 3Gs
+iPhone 4
+iPhone 4s
+iPhone 5
+iPhone 5c
+iPhone 5s
+iPhone 6
+iPhone 6s
+iPhone 6 Plus
+iPhone 6s Plus
+iPhone 7
+iPhone 7 Plus
+iPod Touch 4G
+iPod Touch 5G
+iPod Touch 6G
+Kindle Fire
+Kindle Fire HD 8.9
+LG-H918
+LG-E980
+Micromax Q424
+Motorola Attrix
+Motorola Moto G
+Motorola Moto G XT1032
+Nexus 4
+Nexus 5
+Nexus 5X
+Nexus 6
+Nexus 6P
+Nexus 7
+ONE A2001
+ONE A2003
+Pixel XL
+Pixel C
+SM-G900H
+SM-N920G
+SM-N910G
+SM-N920C
+SM-G930P
+SM-T310
+SM-T825
+SM-T819Y
+SM-T350
+SM-T355Y
+SM-N920C
+Samsung Tab 2
+SAMSUNG-SM-G900A
+SAMSUNG-SM-G920A
+Spice Mi-498
+****
+[testFolder]
+\Tests\Installer_TBD
+\Tests\LoadTests
+\Tests\Temp
+\Tests\InProcessAutomation\trust\android\others
+\Tests\InProcessAutomation\trust\android\phonelookup
+\Tests\InProcessAutomation\trust\crossplatform\trustbrowser
+\Tests\InProcessAutomation\trust\ios\phonelookup
+\Tests\InProcessAutomation\trust\ios\TapToZoom
+\Tests\InProcessAutomation\trust\ios\uicatalog
+\Tests\miscellaneous\android
+\Tests\miscellaneous\crossplatform\desktopviewer
+\Tests\miscellaneous\ios
+\Tests\NativeAutomation\trust\android\temp
+\Tests\NativeAutomation\trust\android\phonelookup
+\Tests\NativeAutomation\trust\crossplatform\trustbrowser
+\Tests\NativeAutomation\trust\ios\PhoneLookup
+\Tests\NativeAutomation\trust\ios\UICatalog
+****
+[nativeAutomation]
+TRUE
+FALSE
+****
+[addIns]
+Mobile Labs Trust,WPF
+WPF
+Mobile Labs Trust
+****
+[emailIds]
+naveen.chauhan@mobilelabsinc.com

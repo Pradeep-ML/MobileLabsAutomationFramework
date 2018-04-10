@@ -21,7 +21,7 @@ This document describes what needs to be done in order to use the automation fra
 1.	Data – TBD, we don’t have any data driven scripts at the moment.
 2.	Debug – Meant only to debug some code before being pushed to the final tests.
 3.	DefectReporting – TBD, report defects to Jira automatically for failures. Not implemented as of now as it requires complex design and logic to determine which bugs need to go to Jira and also check if the bug/failure is already logged or not.
-4.	Environment – File(s) that will be used to setup environment like what device model, os and app will the tests run on. TestLab.xlsx is the only file being used at the moment.
+4.	Environment – File(s) that will be used to setup environment like what device model, os and app will the tests run on. TestSet.txt and TestData.txt are being used at the moment.
 5.	FunctionLibraries – All qfls go in here and this folder will be added to QTP/UFT folder list at run-time.
 6.	MasterScripts – Only ExecuteTestSet.vbs will be used for now which will read configuration from TestLab.xlsx and execute all the tests in the defined directory. It’ll also send out email notifications using the gmail smtp and mobilelabsqa@gmail.com account.
 7.	ORs – All object repositories go in here. This folder will be added to QTP/UFT folder list at run-time.
