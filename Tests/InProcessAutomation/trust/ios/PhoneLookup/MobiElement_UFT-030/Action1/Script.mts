@@ -45,6 +45,8 @@ CreateReportTemplate
 
 'Initial Setup
 StrResult  = LoginAndNavigateToControlsPage("" , objMobiElement)
+Set objMobiList =  MobiDevice("name:=PhoneLookup").MobiList("name:=List")
+objMobiList.Scroll eTOP
 
 
 ''*********************************************************************************************************************
