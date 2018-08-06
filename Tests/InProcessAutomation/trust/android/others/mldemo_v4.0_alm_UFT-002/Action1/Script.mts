@@ -48,10 +48,10 @@ If z=1 Then
 
 	SystemUtil.CloseProcessByName "MobileLabs.deviceViewer.exe"
     'Launch device using CLI
-	SystemUtil.Run "MobileLabs.DeviceConnect.Cli.exe", strConnectParam , Environment("SystemTempDir")&"\CLI"	
+	SystemUtil.Run "dc-cli.exe", strConnectParam , Environment("SystemTempDir")&"\CLI"	
 	Wait(5)
 	Reporter.ReportEvent micDone, "ConnectToDevice", "Connect Parameters: " & strConnectParam
-	'SystemUtil.Run "MobileLabs.DeviceConnect.Cli.exe", strConnectParam , Environment("SystemTempDir") & "\CLI"
+	'SystemUtil.Run "dc-cli.exe", strConnectParam , Environment("SystemTempDir") & "\CLI"
 End If
 
 
