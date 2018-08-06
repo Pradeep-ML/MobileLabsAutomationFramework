@@ -4,7 +4,7 @@
 		
 This document describes what needs to be done in order to use the automation framework. Please follow the steps given below:
 
-##Pre-requisites
+## Pre-requisites
 
 1.	QTP 11.0 or later needs to be installed.
 2.	A driver needs to be installed for PostgreSQL ANSI. Follow these steps:
