@@ -1,1 +1,2 @@
-# Main test categories
+# Notice
+Download CLI from server.
