@@ -1,0 +1,6 @@
+﻿<Properties>
+  <WatchEntry0 value="Len(Environment(&quot;devicename&quot;))" />
+  <WatchEntry1 value="IsEmpty(Environment(&quot;devicemodel&quot;))" />
+  <WatchEntry2 value="Environment(&quot;devicemodel&quot;)" />
+  <WatchEntry3 value="strVars" />
+</Properties>
