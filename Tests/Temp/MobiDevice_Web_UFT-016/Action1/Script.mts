@@ -28,7 +28,7 @@ Set objMobiWebButton  = MobiDevice("Web Browser").MobiWebButton("btnTheButton")
 strURL =  "http://qa-content.mobilelabsinc.net/ml.html"
 
 If Not  objMobiWebButton.Exist(3) Then
-		'Open URL for testing
+	'Open URL for testing
 	OpenURL strURL , objMobiWebButton  , 3
 End If
 
