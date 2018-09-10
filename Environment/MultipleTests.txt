@@ -15,3 +15,5 @@ Tests\InProcessAutomation\trust\android\phonelookup,
 \Tests\NativeAutomation\trust\crossplatform\trustbrowser,
 \Tests\NativeAutomation\trust\ios\PhoneLookup,
 \Tests\NativeAutomation\trust\ios\UICatalog
+
+'Comment:Naveen
