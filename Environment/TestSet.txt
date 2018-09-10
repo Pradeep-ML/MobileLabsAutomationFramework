@@ -16,3 +16,4 @@ appID=com.mobilelabsinc.Trust-Browser
 nativeAutomation=FALSE
 addIns=Mobile Labs Trust
 emailNotifications=FALSE
+'Comment:Naveen
