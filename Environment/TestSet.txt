@@ -1,9 +1,9 @@
-dCVersion=8.0.7010.0807.master@843fc1e
-trustVersion=8.0.7010.0807.master@843fc1e
-agentVersion=8.0.6821.0722
+dCVersion=8.0.7108.0830.master@4ef8913
+trustVersion=8.0.7108.0830.master@4ef8913
+agentVersion=8.0.7108.0830
 protocolVersion=1.1.1.0
-dCIP=10.10.0.32
-dCUser=naveen@mlabs.com
+dCIP=10.4.6.121
+dCUser=pradeep@ml.com
 dCPassword=deviceconnect
 deviceName=
 deviceModel=iPhone 7
