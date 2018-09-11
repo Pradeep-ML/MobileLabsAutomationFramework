@@ -27,7 +27,8 @@ arrROPropValues = array("table with only tr/td" )
 'URL of the application to be opened
 strURL =  "http://qa-content.mobilelabsinc.net/ml.html"
 strURL1 = "www.gmail.com"
-strURL2 = "http://www.tutorialspoint.com"
+'strURL2 = "http://www.tutorialspoint.com"
+strURL2 = "http://qa-content.mobilelabsinc.net"
 
 
 'Create an html report template
@@ -107,7 +108,9 @@ blnResult = VerifyChildObjects(objMobiWebElement, "recursive" ,1)
 
 Set objMobiWebElement = Nothing
 wait 2
-Set objMobiWebElement = MobiDevice("Web Browser").MobiWebElement("TutorialsLibrary")
+'Set objMobiWebElement = MobiDevice("Web Browser").MobiWebElement("TutorialsLibrary")
+Set objMobiWebElement = MobiDevice("Web Browser").MobiWebView("WebView").MobiWebElement("LI")
+
 OpenURL strURL2 , objMobiWebElement  , 3
 wait 2
 'Step 20:  Execute Click  without coordinates
@@ -126,49 +129,49 @@ Environment("StepName") = "Step" & intStep
 Environment.Value("Description") = "Execute Click on MobiWebElement for random co-ordinates."
 Environment("ExpectedResult") = "Click should work correctly with random co-ordinates."
 blnStepRC = VerifyClick(objMobiWebElement, "withrandomcoords")
-OpenURL strURL2 , objMobiWebElement  , 3
+'OpenURL strURL2 , objMobiWebElement  , 3
 
-'Step 22:  Execute Click with boundary coordinates at Top-Left corner
-'#######################################################
-intStep = intStep+1
-Environment("StepName") = "Step" & intStep
-Environment.Value("Description") = "Execute Click on MobiWebElement for boundary co-ordinates at Top-Left Corner."
-Environment("ExpectedResult") = "Click should work correctly with boundary co-ordinates at Top-Left Corner."
-blnStepRC = VerifyClick(objMobiWebElement, "withboundarycoordsTopLeft")
-OpenURL strURL2 , objMobiWebElement  , 3
-
-
-
-'Step 23:  Execute Click with boundary coordinates at Top-Right corner
-'#######################################################
-intStep = intStep+1
-Environment("StepName") = "Step" & intStep
-Environment.Value("Description") = "Execute Click on MobiWebElement for boundary co-ordinates at Top-Right Corner."
-Environment("ExpectedResult") = "Click should work correctly with boundary co-ordinates at Top-Right Corner."
-blnStepRC = VerifyClick(objMobiWebElement, "withboundarycoordsTopRight")
-
-OpenURL strURL2 , objMobiWebElement  , 3
-
-
-
-'Step 24:  Execute Click with boundary coordinates at Bottom-Left corner
-'#######################################################
-intStep = intStep+1
-Environment("StepName") = "Step" & intStep
-Environment.Value("Description") = "Execute Click on MobiWebElement for boundary co-ordinates at Bottom-Left Corner."
-Environment("ExpectedResult") = "Click should work correctly with boundary co-ordinates at Bottom-Left Corner."
-blnStepRC = VerifyClick(objMobiWebElement, "withboundarycoordsBottomLeft")
-OpenURL strURL2 , objMobiWebElement  , 3
-
-
-
-'Step 25:  Execute Click with boundary coordinates at bottom-right corner
-'#######################################################
-intStep = intStep+1
-Environment("StepName") = "Step" & intStep
-Environment.Value("Description") = "Execute Click on MobiWebElement for boundary co-ordinates at Bottom-Right Corner."
-Environment("ExpectedResult") = "Click should work correctly with boundary co-ordinates at Bottom-Right Corner."
-blnStepRC = VerifyClick(objMobiWebElement, "withboundarycoordsBottomRight")
+''Step 22:  Execute Click with boundary coordinates at Top-Left corner
+''#######################################################
+'intStep = intStep+1
+'Environment("StepName") = "Step" & intStep
+'Environment.Value("Description") = "Execute Click on MobiWebElement for boundary co-ordinates at Top-Left Corner."
+'Environment("ExpectedResult") = "Click should work correctly with boundary co-ordinates at Top-Left Corner."
+'blnStepRC = VerifyClick(objMobiWebElement, "withboundarycoordsTopLeft")
+'OpenURL strURL2 , objMobiWebElement  , 3
+'
+'
+'
+''Step 23:  Execute Click with boundary coordinates at Top-Right corner
+''#######################################################
+'intStep = intStep+1
+'Environment("StepName") = "Step" & intStep
+'Environment.Value("Description") = "Execute Click on MobiWebElement for boundary co-ordinates at Top-Right Corner."
+'Environment("ExpectedResult") = "Click should work correctly with boundary co-ordinates at Top-Right Corner."
+'blnStepRC = VerifyClick(objMobiWebElement, "withboundarycoordsTopRight")
+'
+'OpenURL strURL2 , objMobiWebElement  , 3
+'
+'
+'
+''Step 24:  Execute Click with boundary coordinates at Bottom-Left corner
+''#######################################################
+'intStep = intStep+1
+'Environment("StepName") = "Step" & intStep
+'Environment.Value("Description") = "Execute Click on MobiWebElement for boundary co-ordinates at Bottom-Left Corner."
+'Environment("ExpectedResult") = "Click should work correctly with boundary co-ordinates at Bottom-Left Corner."
+'blnStepRC = VerifyClick(objMobiWebElement, "withboundarycoordsBottomLeft")
+'OpenURL strURL2 , objMobiWebElement  , 3
+'
+'
+'
+''Step 25:  Execute Click with boundary coordinates at bottom-right corner
+''#######################################################
+'intStep = intStep+1
+'Environment("StepName") = "Step" & intStep
+'Environment.Value("Description") = "Execute Click on MobiWebElement for boundary co-ordinates at Bottom-Right Corner."
+'Environment("ExpectedResult") = "Click should work correctly with boundary co-ordinates at Bottom-Right Corner."
+'blnStepRC = VerifyClick(objMobiWebElement, "withboundarycoordsBottomRight")
 
 OpenURL strURL2 , objMobiWebElement  , 3
 
@@ -342,7 +345,7 @@ blnResult =  VerifyIsOccluded(objMobiWebElement , "withcentervalues" , "occluded
 'Open alternative URL
  	Set objMobiWebElement = Nothing
  	wait 1
-	Set objMobiWebElement= MobiDevice("Web Browser").MobiWebElement("TutorialsLibrary")
+	Set objMobiWebElement= MobiDevice("Web Browser").MobiWebView("WebView").MobiWebElement("UL")
 	OpenURL strURL2 , objMobiWebElement  , 3
 	wait 4
 	Set objMobiWebElement = Nothing

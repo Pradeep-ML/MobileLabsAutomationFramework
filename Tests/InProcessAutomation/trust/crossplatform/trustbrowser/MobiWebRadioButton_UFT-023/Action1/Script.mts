@@ -25,7 +25,7 @@ Environment("Component") = "Web Browser"
 Set objMobiWebRadio = MobiDevice("Web Browser").MobiWebRadioButton("rdoDinosaurs")
 Set objMobiWebRadio2 = MobiDevice("Web Browser").MobiWebRadioButton("rdoAndroids")
 Set objOnGooglePage = MobiDevice("Web Browser").MobiElement("eleGoogle")
-Set objGmail =  MobiDevice("Web Browser").MobiWebButton("btnSignIn_Gmail")
+Set objGmail =  MobiDevice("Web Browser").MobiElement("eleGmail")
 
 arrTOProps = Array("visible" , "value"  , "name" , "id" ,  "htmlclass" , "enabled")
 arrTOPropValues = Array("True" ,"dinos"  ,  "radioname" , "dinos-id" , "dinos-class", True)
