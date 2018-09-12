@@ -26,13 +26,13 @@ Environment("StepsToReproduce") = ""
 'Input parameters
 
 Set objMobiWebView = MobiDevice("Web Browser").MobiWebView("WebView")
-Set objMobiWebEdit = MobiDevice("Web Browser").MobiWebEdit("edTP")
+Set objMobiWebElement = MobiDevice("Web Browser").MobiWebView("WebView").MobiWebElement("UL")
 
 'URL of the application to be opened
-'strURL =  "http://qa-content.mobilelabsinc.net/ml.html"
-strURL1 = "www.tutorialspoint.com"
+strURL1 =  "http://qa-content.mobilelabsinc.net"
+'strURL1 = "www.tutorialspoint.com"
 
-OpenURL strURL1 , objMobiWebEdit , 5 
+OpenURL strURL1 , objMobiWebElement , 3
 
 ' Step:  Execute CaptureBitmap with .png format
 '#######################################################
@@ -76,7 +76,7 @@ Environment("Description") = "Execute Click without coordinates on MobiWebView."
 Environment("ExpectedResult") = "Click should work correctly."
 blnFlag = VerifyClick(objMobiWebView, "withoutcoords")
 
-OpenURL strURL1 , objMobiWebEdit , 5 
+OpenURL strURL1 , objMobiWebElement , 3
 
 ' Step 9:  Execute Click with random coordinates 
 '#######################################################
@@ -89,7 +89,7 @@ Environment("Description") = "Execute Click with random coordinates on MobiWebVi
 Environment("ExpectedResult") = "Click should work correctly."
 blnFlag = VerifyClick(objMobiWebView, "withrandomcoords")
 
-OpenURL strURL1 , objMobiWebEdit , 5 
+OpenURL strURL1 , objMobiWebElement , 3
 
 
 ' Step 10:  Execute Click with x co-ordinates
@@ -101,7 +101,7 @@ Environment("Description") = "Execute Click with only x co-ordinates on MobiWebV
 Environment("ExpectedResult") = "Click should work correctly."
 blnFlag = VerifyClick(objMobiWebView, "withxvalue")
 
-OpenURL strURL1 , objMobiWebEdit , 5 
+OpenURL strURL1 , objMobiWebElement , 3
 
 ' Step 10:  Execute Click with y co-ordinates
 '#######################################################
@@ -112,7 +112,8 @@ Environment("Description") = "Execute Click with only x co-ordinates on MobiWebV
 Environment("ExpectedResult") = "Click should work correctly."
 blnFlag = VerifyClick(objMobiWebView, "withyvalue")
 
-OpenURL strURL1 , objMobiWebEdit , 5 
+OpenURL strURL1 , objMobiWebElement , 3
+
 
 
 ' Step 17:  Execute Swipe eDOWN 
@@ -121,7 +122,7 @@ intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment("Description") = "Execute Swipe eDOWN  on MobiWebView."
 Environment("ExpectedResult") = "Simulates a gesture on a MobiWebView"
-Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebLink("CodingGround")
+Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebView("WebView").MobiWebLink("diagnostic-tests")
 blnFlag = VerifySwipe(objMobiWebView , eDOWN , ,30,,ObjAfterSwipe)
 
 ' Step 18:  Execute Swipe eUP 
@@ -130,7 +131,7 @@ intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment("Description") = "Execute Swipe eUP  on MobiWebView."
 Environment("ExpectedResult") = "Simulates a gesture on a MobiWebView"
-Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebLink("CodingGround")
+Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebView("WebView").MobiWebLink("diagnostic-tests")
 blnFlag = VerifySwipe(objMobiWebView , eUP,,20,, ObjAfterSwipe)
 
 ' Step 19:  Execute Swipe eDOWN  and velocity eFAST
@@ -139,7 +140,7 @@ intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment("Description") = " Execute Swipe eDOWN  and velocity eFAST  on MobiWebView."
 Environment("ExpectedResult") = "Simulates a gesture on a MobiWebView"
-Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebLink("CodingGround")
+Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebView("WebView").MobiWebLink("diagnostic-tests")
 blnFlag = VerifySwipe(objMobiWebView ,eDOWN,eFAST,30,, ObjAfterSwipe)
 
 
@@ -149,7 +150,7 @@ intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment("Description") = "Execute Swipe eUP and velocity eFAST on MobiWebView."
 Environment("ExpectedResult") = "Simulates a gesture on a MobiWebView"
-Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebLink("CodingGround")
+Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebView("WebView").MobiWebLink("diagnostic-tests")
 blnFlag = VerifySwipe(objMobiWebView ,eUP ,eFAST,20,, ObjAfterSwipe)
 
 
@@ -159,7 +160,7 @@ intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment("Description") = " Execute Swipe eDOWN  and velocity eMEDIUM  on MobiWebView."
 Environment("ExpectedResult") = "Simulates a gesture on a MobiWebView"
-Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebLink("CodingGround")
+Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebView("WebView").MobiWebLink("diagnostic-tests")
 blnFlag = VerifySwipe(objMobiWebView ,eDOWN,eMEDIUM,40,, ObjAfterSwipe)
 
 
@@ -169,7 +170,7 @@ intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment("Description") = "Execute Swipe eUP and velocity eMEDIUM on MobiWebView."
 Environment("ExpectedResult") = "Simulates a gesture on a MobiWebView"
-Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebLink("CodingGround")
+Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebView("WebView").MobiWebLink("diagnostic-tests")
 blnFlag = VerifySwipe(objMobiWebView ,eUP ,eMEDIUM,20,, ObjAfterSwipe)
 
 
@@ -179,7 +180,7 @@ intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment("Description") = " Execute Swipe eDOWN  and velocity eSLOW  on MobiWebView."
 Environment("ExpectedResult") = "Simulates a gesture on a MobiWebView"
-Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebLink("CodingGround")
+Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebView("WebView").MobiWebLink("diagnostic-tests")
 blnFlag = VerifySwipe(objMobiWebView ,eDOWN,eSLOW,30,, ObjAfterSwipe)
 
 
@@ -189,7 +190,7 @@ intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment("Description") = "Execute Swipe eUP and velocity eSLOW on MobiWebView."
 Environment("ExpectedResult") = "Simulates a gesture on a MobiWebView"
-Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebLink("CodingGround")
+Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebView("WebView").MobiWebLink("diagnostic-tests")
 blnFlag = VerifySwipe(objMobiWebView ,eUP ,eSLOW,20,, ObjAfterSwipe)
 
 
@@ -199,7 +200,7 @@ intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment("Description") = " Execute Swipe eDOWN  and velocity eSLOW and valid starting percentage on MobiWebView."
 Environment("ExpectedResult") = "Simulates a gesture on a MobiWebView"
-Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebLink("CodingGround")
+Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebView("WebView").MobiWebLink("diagnostic-tests")
 blnFlag = VerifySwipe(objMobiWebView ,eDOWN,eSLOW, 35, , ObjAfterSwipe)
 
 
@@ -209,7 +210,7 @@ intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment("Description") = "Execute Swipe eUP and velocity eSLOW and valid starting percentage on MobiWebView."
 Environment("ExpectedResult") = "Simulates a gesture on a MobiWebView"
-Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebLink("CodingGround")
+Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebView("WebView").MobiWebLink("diagnostic-tests")
 blnFlag = VerifySwipe(objMobiWebView ,eUP ,eSLOW, 20, , ObjAfterSwipe)
 
 
@@ -219,7 +220,7 @@ intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment("Description") = " Execute Swipe eDOWN  and velocity eMEDIUM and valid starting percentage on MobiWebView."
 Environment("ExpectedResult") = "Simulates a gesture on a MobiWebView"
-Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebLink("CodingGround")
+Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebView("WebView").MobiWebLink("diagnostic-tests")
 blnFlag = VerifySwipe(objMobiWebView ,eDOWN,eMEDIUM, 30, , ObjAfterSwipe)
 
 
@@ -229,7 +230,7 @@ intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment("Description") = "Execute Swipe eUP and velocity eMEDIUM and valid starting percentage on MobiWebView."
 Environment("ExpectedResult") = "Simulates a gesture on a MobiWebView"
-Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebLink("CodingGround")
+Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebView("WebView").MobiWebLink("diagnostic-tests")
 blnFlag = VerifySwipe(objMobiWebView ,eUP ,eMEDIUM, 20, , ObjAfterSwipe)
 
 
@@ -239,7 +240,7 @@ intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment("Description") = " Execute Swipe eDOWN  and velocity eFAST and valid starting percentage on MobiWebView."
 Environment("ExpectedResult") = "Simulates a gesture on a MobiWebView"
-Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebLink("CodingGround")
+Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebView("WebView").MobiWebLink("diagnostic-tests")
 blnFlag = VerifySwipe(objMobiWebView ,eDOWN,eFAST, 30, , ObjAfterSwipe)
 
 
@@ -249,7 +250,7 @@ intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment("Description") = "Execute Swipe eUP and velocity eFAST and valid starting percentage on MobiWebView."
 Environment("ExpectedResult") = "Simulates a gesture on a MobiWebView"
-Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebLink("CodingGround")
+Set ObjAfterSwipe = MobiDevice("Web Browser").MobiWebView("WebView").MobiWebLink("diagnostic-tests")
 blnFlag = VerifySwipe(objMobiWebView ,eUP ,eFAST, 20, , ObjAfterSwipe)
 
 ' Step 30:  Execute Scroll eBottom
@@ -258,7 +259,7 @@ intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment("Description") = "Execute Scroll eBottom on MobiWebView."
 Environment("ExpectedResult") = "Simulates the gesture of moving to the edge of a scrollable area on MobiWebView"
-Set ObjAfterScroll = MobiDevice("Web Browser").MobiWebLink("Contact")
+Set ObjAfterScroll = MobiDevice("Web Browser").MobiWebView("WebView").MobiWebLink("JSON-inventory/date-literal")
 blnFlag = VerifyScroll(objMobiWebView ,"bottom",ObjAfterScroll)
 
 ' Step 30:  Execute Scroll eTop
@@ -267,7 +268,7 @@ intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment("Description") = "Execute Scroll eTop on MobiWebView."
 Environment("ExpectedResult") = "Simulates the gesture of moving to the edge of a scrollable area on MobiWebView"
-Set ObjAfterScroll = MobiDevice("Web Browser").MobiWebEdit("edTP")
+Set ObjAfterScroll = MobiDevice("Web Browser").MobiWebView("WebView").MobiWebLink("event-tests")
 blnFlag = VerifyScroll(objMobiWebView ,"top",ObjAfterScroll)
 
 ' Step 30:  Execute Scroll without parameter
@@ -276,7 +277,7 @@ intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment("Description") = "Execute Scroll without parameter on MobiWebView."
 Environment("ExpectedResult") = "Proper error message should be thrown"
-Set ObjAfterScroll = MobiDevice("Web Browser").MobiWebLink("Contact")
+Set ObjAfterScroll = MobiDevice("Web Browser").MobiWebView("WebView").MobiWebLink("JSON-inventory/date-literal")
 blnFlag = VerifyScroll(objMobiWebView ,"withoutparameter",ObjAfterScroll)
 
 ' Step :  Execute CheckProperty when object is visible

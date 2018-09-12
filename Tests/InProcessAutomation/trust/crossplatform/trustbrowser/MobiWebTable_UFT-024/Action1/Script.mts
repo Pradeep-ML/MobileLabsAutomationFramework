@@ -23,7 +23,8 @@ Environment("Component") = "Web Browser"
 'Set object for MobiWebCheckBox
 Set objMobiWebTable = MobiDevice("Web Browser").MobiWebTable("tblTable2")
 Set objGoogle = MobiDevice("Web Browser").MobiElement("eleGoogle")
-Set objGmail =  MobiDevice("Web Browser").MobiWebButton("btnSignIn_Gmail")
+Set objGmail =  MobiDevice("Web Browser").MobiElement("eleGmail")
+
 
 arrTOProps = Array("visible" , "name" , "id" , "htmlclass" , "enabled")
 arrTOPropValues = Array("True" , "table1-name" , "table1-id" , "trtdth" , "True")

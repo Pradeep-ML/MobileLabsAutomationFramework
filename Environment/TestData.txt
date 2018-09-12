@@ -16,10 +16,14 @@ Android
 iOS
 ****
 [deviceFriendlyModel]
+Bolt Selfie
 Canvas 4
 Desire HD
+Dream Duo 
+Droid Incredible
 Fire Phone
 Galaxy A5
+Galaxy Note 5
 Galaxy Note 8
 Galaxy S
 Galaxy S Captivate
@@ -27,11 +31,15 @@ Galaxy S3
 Galaxy S3 Mini
 Galaxy S4 Mini
 Galaxy S6
-GalaxyS7
+Galaxy S7
+Galaxy S7 Edge
 Galaxy S8
+Galaxy Tab S2
+Galaxy Tab A 
 Galaxy Tab 2
 Galaxy Tab 3
 Galaxy Tab 7
+Galaxy Tab 10
 GT-I9500
 GT-I9505
 GT-I9192
@@ -44,6 +52,7 @@ iPad 1
 iPad 2
 iPad 3
 iPad 4
+iPad (6th generation)
 iPad Air
 iPad Air 2
 iPad mini
@@ -55,7 +64,7 @@ iPad Pro
 iPad Pro (9.7-inch)
 iPad Pro (10.5-inch)
 iPad Pro (12.9-inch)
-iPhoneSE
+iPhone SE
 iPhone 3Gs
 iPhone 4
 iPhone 4s
@@ -68,6 +77,9 @@ iPhone 6 Plus
 iPhone 6s Plus
 iPhone 7
 iPhone 7 Plus
+iPhone 8 
+iPhone 8 Plus
+iPhone X
 iPod Touch 4G
 iPod Touch 5G
 iPod Touch 6G
@@ -103,7 +115,8 @@ SM-N920C
 Samsung Tab 2
 SAMSUNG-SM-G900A
 SAMSUNG-SM-G920A
-Spice Mi-498
+X Style
+ZMAX Pro
 ****
 [testFolder]
 \Tests\Installer_TBD

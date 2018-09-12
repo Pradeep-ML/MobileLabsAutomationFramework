@@ -18,9 +18,8 @@ Environment("Component") = "Web Browser"
 '#######################################################
 'Input parameters
 Set objMobiWebLink  = MobiDevice("Web Browser").MobiWebLink("lnkMobileLabs")
-
 Set objGoogle = MobiDevice("Web Browser").MobiElement("eleGoogle")
-Set objGmail =  MobiDevice("Web Browser").MobiWebButton("btnSignIn_Gmail")
+Set objGmail =  MobiDevice("Web Browser").MobiElement("eleGmail")
 
 arrTOProps = Array("visible" , "text"   , "href", "enabled")
 arrTOPropValues = Array("True" ,"Mobile Labs Inc"  ,  "http://www.mobilelabsinc.com/" , "True")

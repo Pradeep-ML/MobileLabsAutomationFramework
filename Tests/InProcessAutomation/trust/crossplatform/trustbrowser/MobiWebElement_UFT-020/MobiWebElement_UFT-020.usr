@@ -31,8 +31,8 @@ Default Profile=default.usp
 Lang=none
 
 [TulipInfo]
-ProductName=HP Unified Functional Testing
-Version=12.53
+ProductName=HPE Unified Functional Testing
+Version=14.03
 
 [TulipAddins]
 Database=
@@ -41,7 +41,6 @@ Insight=
 Mobile Labs Trust=
 Windows Applications=
 TEA=
-Windows Runtime=
 XML=
 
 [ExtraFiles]

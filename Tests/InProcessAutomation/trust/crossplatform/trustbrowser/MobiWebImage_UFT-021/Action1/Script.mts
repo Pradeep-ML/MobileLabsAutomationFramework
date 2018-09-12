@@ -21,7 +21,7 @@ Environment("Component") = "Web Browser"
 'Set object for MobiWebImage
 Set objMobiWebImage  =MobiDevice("Web Browser").MobiWebImage("imgImage")
 Set objGmail =  MobiDevice("Web Browser").MobiWebButton("btnSignIn_Gmail")
-Set objGoogle = MobiDevice("Web Browser").MobiElement("eleGoogle")
+Set objGoogle = MobiDevice("Web Browser").MobiWebImage("imgGoogle")
 
 arrTOProps = Array("visible" , "enabled")
 arrTOPropValues = Array("True" ,"True")
@@ -32,8 +32,6 @@ arrROPropValues = Array("img-id")
 'URL of the application to be opened
 strURL =  "http://qa-content.mobilelabsinc.net/ml.html"
 strURL1 = "www.google.com"
-strURL2 = "http://www.tutorialspoint.com/"
-strURL3 = "www.gmail.com"
 
 'Create an html report template
 CreateReportTemplate()
@@ -128,11 +126,16 @@ blnResult =  VerifyIsOccluded(objMobiWebImage , "withcentervalues" , "notocclude
 '#############################################################
 
 Set objMobiWebImage = Nothing
-wait 2
-Set objMobiWebImage = MobiDevice("Web Browser").MobiWebImage("IMG_TutorialsLibrary")
+wait 1
+Set objMobiWebImage = MobiDevice("Web Browser").MobiWebImage("imgImage")
 
 'Open URL for testing
-OpenURL strURL2 , objMobiWebImage ,3
+OpenURL strURL1 , objGoogle ,3
+MobiDevice("Web Browser").MobiWebEdit("edSearch").Set "Images"
+wait 1
+MobiDevice("Web Browser").MobiWebButton("btnGoogleSearch").Click
+objMobiWebImage.WaitProperty "visible", "true"
+
 
 'Step 9 : Execute Click 
 '##########################################################
@@ -140,10 +143,15 @@ intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment("Description") = "Verify Click" 
 Environment("ExpectedResult") = "Click should work correctly."
+Set objMobiWebImage = MobiDevice("Web Browser").MobiWebImage("imgImage")
 blnResult = VerifyClick(objMobiWebImage, "withoutcoords")
 
 'Open URL for testing
- OpenURL strURL2 , objMobiWebImage ,3
+OpenURL strURL1 , objGoogle ,3
+MobiDevice("Web Browser").MobiWebEdit("edSearch").Set "Images"
+wait 1
+MobiDevice("Web Browser").MobiWebButton("btnGoogleSearch").Click
+objMobiWebImage.WaitProperty "visible", "true"
 
 'Step 20:  Execute Click  without coordinates
 '#######################################################
@@ -151,10 +159,15 @@ intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment("Description") = "Execute Click on MobiWebImage without coordinates."
 Environment("ExpectedResult") = "Click should work correctly without co-ordinates."
+Set objMobiWebImage = MobiDevice("Web Browser").MobiWebImage("imgImage")
 blnStepRC = VerifyClick(objMobiWebImage, "withoutcoords")
 
 'Open URL for testing
- OpenURL strURL2 , objMobiWebImage ,3
+OpenURL strURL1 , objGoogle ,3
+MobiDevice("Web Browser").MobiWebEdit("edSearch").Set "Images"
+wait 1
+MobiDevice("Web Browser").MobiWebButton("btnGoogleSearch").Click
+objMobiWebImage.WaitProperty "visible", "true"
 
 'Step 21:  Execute Click with  random coordinates
 '#######################################################
@@ -162,54 +175,59 @@ intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment.Value("Description") = "Execute Click on MobiWebImage for random co-ordinates."
 Environment("ExpectedResult") = "Click should work correctly with random co-ordinates."
+Set objMobiWebImage = MobiDevice("Web Browser").MobiWebImage("imgImage")
 blnStepRC = VerifyClick(objMobiWebImage, "withrandomcoords")
 
+''Open URL for testing
+' OpenURL strURL2 , objMobiWebImage ,3
+'
+''Step 22:  Execute Click with boundary coordinates at Top-Left corner
+''#######################################################
+'intStep = intStep+1
+'Environment("StepName") = "Step" & intStep
+'Environment.Value("Description") = "Execute Click on MobiWebImage for boundary co-ordinates at Top-Left Corner."
+'Environment("ExpectedResult") = "Click should work correctly with boundary co-ordinates at Top-Left Corner."
+'blnStepRC = VerifyClick(objMobiWebImage, "withboundarycoordsTopLeft")
+'
+''Open URL for testing
+' OpenURL strURL2 , objMobiWebImage ,3
+'
+''Step 23:  Execute Click with boundary coordinates at Top-Right corner
+''#######################################################
+'intStep = intStep+1
+'Environment("StepName") = "Step" & intStep
+'Environment.Value("Description") = "Execute Click on MobiWebImage for boundary co-ordinates at Top-Right Corner."
+'Environment("ExpectedResult") = "Click should work correctly with boundary co-ordinates at Top-Right Corner."
+'blnStepRC = VerifyClick(objMobiWebImage, "withboundarycoordsTopRight")
+'
+''Open URL for testing
+' OpenURL strURL2 , objMobiWebImage ,3
+'
+''Step 24:  Execute Click with boundary coordinates at Bottom-Left corner
+''#######################################################
+'intStep = intStep+1
+'Environment("StepName") = "Step" & intStep
+'Environment.Value("Description") = "Execute Click on MobiWebImage for boundary co-ordinates at Bottom-Left Corner."
+'Environment("ExpectedResult") = "Click should work correctly with boundary co-ordinates at Bottom-Left Corner."
+'blnStepRC = VerifyClick(objMobiWebImage, "withboundarycoordsBottomLeft")
+'
+''Open URL for testing
+' OpenURL strURL2 , objMobiWebImage ,3
+'
+''Step 25:  Execute Click with boundary coordinates at bottom-right corner
+''#######################################################
+'intStep = intStep+1
+'Environment("StepName") = "Step" & intStep
+'Environment.Value("Description") = "Execute Click on MobiWebImage for boundary co-ordinates at Bottom-Right Corner."
+'Environment("ExpectedResult") = "Click should work correctly with boundary co-ordinates at Bottom-Right Corner."
+'blnStepRC = VerifyClick(objMobiWebImage, "withboundarycoordsBottomRight")
+'
 'Open URL for testing
- OpenURL strURL2 , objMobiWebImage ,3
-
-'Step 22:  Execute Click with boundary coordinates at Top-Left corner
-'#######################################################
-intStep = intStep+1
-Environment("StepName") = "Step" & intStep
-Environment.Value("Description") = "Execute Click on MobiWebImage for boundary co-ordinates at Top-Left Corner."
-Environment("ExpectedResult") = "Click should work correctly with boundary co-ordinates at Top-Left Corner."
-blnStepRC = VerifyClick(objMobiWebImage, "withboundarycoordsTopLeft")
-
-'Open URL for testing
- OpenURL strURL2 , objMobiWebImage ,3
-
-'Step 23:  Execute Click with boundary coordinates at Top-Right corner
-'#######################################################
-intStep = intStep+1
-Environment("StepName") = "Step" & intStep
-Environment.Value("Description") = "Execute Click on MobiWebImage for boundary co-ordinates at Top-Right Corner."
-Environment("ExpectedResult") = "Click should work correctly with boundary co-ordinates at Top-Right Corner."
-blnStepRC = VerifyClick(objMobiWebImage, "withboundarycoordsTopRight")
-
-'Open URL for testing
- OpenURL strURL2 , objMobiWebImage ,3
-
-'Step 24:  Execute Click with boundary coordinates at Bottom-Left corner
-'#######################################################
-intStep = intStep+1
-Environment("StepName") = "Step" & intStep
-Environment.Value("Description") = "Execute Click on MobiWebImage for boundary co-ordinates at Bottom-Left Corner."
-Environment("ExpectedResult") = "Click should work correctly with boundary co-ordinates at Bottom-Left Corner."
-blnStepRC = VerifyClick(objMobiWebImage, "withboundarycoordsBottomLeft")
-
-'Open URL for testing
- OpenURL strURL2 , objMobiWebImage ,3
-
-'Step 25:  Execute Click with boundary coordinates at bottom-right corner
-'#######################################################
-intStep = intStep+1
-Environment("StepName") = "Step" & intStep
-Environment.Value("Description") = "Execute Click on MobiWebImage for boundary co-ordinates at Bottom-Right Corner."
-Environment("ExpectedResult") = "Click should work correctly with boundary co-ordinates at Bottom-Right Corner."
-blnStepRC = VerifyClick(objMobiWebImage, "withboundarycoordsBottomRight")
-
-'Open URL for testing
- OpenURL strURL2 , objMobiWebImage ,3
+OpenURL strURL1 , objGoogle ,3
+MobiDevice("Web Browser").MobiWebEdit("edSearch").Set "Images"
+wait 1
+MobiDevice("Web Browser").MobiWebButton("btnGoogleSearch").Click
+objMobiWebImage.WaitProperty "visible", "true"
 
 
 'Step 26:  Execute Click with x co-ordinates
@@ -218,9 +236,15 @@ intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment.Value("Description") = "Execute Click on MobiWebImage with x co-ordinates."
 Environment("ExpectedResult") = "Click should work correctly with x co-ordinates."
+Set objMobiWebImage = MobiDevice("Web Browser").MobiWebImage("imgImage")
 blnStepRC = VerifyClick(objMobiWebImage, "withxvalue")
+
 'Open URL for testing
- OpenURL strURL2 , objMobiWebImage ,3
+OpenURL strURL1 , objGoogle ,3
+MobiDevice("Web Browser").MobiWebEdit("edSearch").Set "Images"
+wait 1
+MobiDevice("Web Browser").MobiWebButton("btnGoogleSearch").Click
+objMobiWebImage.WaitProperty "visible", "true"
 
 
 'Step 27:  Execute Click with y co-ordinates
@@ -229,6 +253,7 @@ intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment.Value("Description") = "Execute Click on MobiWebImage with y co-ordinates."
 Environment("ExpectedResult") = "Click should work correctly with y co-ordinates."
+Set objMobiWebImage = MobiDevice("Web Browser").MobiWebImage("imgImage")
 blnStepRC = VerifyClick(objMobiWebImage, "withyvalue")
 
 Set objMobiWebImage  = Nothing
@@ -341,11 +366,13 @@ Environment("ExpectedResult") ="WaitProperty should return true when object is  
 blnResult = VerifyWaitProperty(objMobiWebImage, "visible", "True", 5000,True)
 
 'Open alternative URL
-OpenURL  strURL1 , objGoogle , 2
-wait 10
-'OpenURL  strURL2 , objGmail , 2
+OpenURL  strURL1 , objGoogle , 3
 MobiDevice("Web Browser").Sync
-MobiDevice("Web Browser").MobiElement("eleGoogle").WaitProperty  "visible" , True , 7000
+MobiDevice("Web Browser").MobiWebImage("imgGoogle").WaitProperty "visible" , True , 7000
+
+Set objMobiWebImage = Nothing
+wait 2
+Set objMobiWebImage  = MobiDevice("Web Browser").MobiWebImage("imgImage")
 
 'Step : Execute 'WaitProperty when object is not visible
 '##########################################################
