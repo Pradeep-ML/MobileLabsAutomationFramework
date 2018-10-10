@@ -321,17 +321,8 @@ Environment("Description") = "Execute method with boundary co-ordinates at Top-L
 Environment("ExpectedResult") = "Click should work correctly."
 blnResult = VerifyClick(objMobiEdit, "withboundarycoordsTopLeft")
 
-'Code to close keypad
-strImagePathAfter = Environment("SystemTempDir") & "\" & Replace(Replace(Replace(CStr(Now), "/", ""), " ", "_"), ":", "") & ".bmp" 
-MobiDevice("Phone Lookup").MobiButton("SignIn").CaptureBitmap  strImagePathAfter , True
-If CompareBitmap(strImagePathAfter , strImagePathBefore)  Then
-	MobiDevice("Phone Lookup").ButtonPress eBACK
-	Wait 1
-End If
-
-'Put away focus from Username
-MobiDevice("Phone Lookup").MobiEdit("ed_Password").Set "demo"
-Wait 1
+'Close keypad
+CloseAndroidKeypad
 
 ' Step24: Execute Click with  Boundary coordinates at Top-Right corner
 '##########################################################
@@ -343,17 +334,8 @@ Environment("Description") = "Execute method with boundary co-ordinates at Top-R
 Environment("ExpectedResult") = "Click should work correctly."
 blnResult = VerifyClick(objMobiEdit, "withboundarycoordsTopRight")
 
-'Code to close keypad
-strImagePathAfter = Environment("SystemTempDir") & "\" & Replace(Replace(Replace(CStr(Now), "/", ""), " ", "_"), ":", "") & ".bmp" 
-MobiDevice("Phone Lookup").MobiButton("SignIn").CaptureBitmap  strImagePathAfter , True
-If CompareBitmap(strImagePathAfter , strImagePathBefore)  Then
-	MobiDevice("Phone Lookup").ButtonPress eBACK
-	Wait 1
-End If
-
-'Put away focus from Username
-MobiDevice("Phone Lookup").MobiEdit("ed_Password").Set "demo"
-Wait 1
+'Close keypad
+CloseAndroidKeypad
 
 ' Step25: Execute Click with  Boundary coordinates at Bottom-Left corner
 '##########################################################
@@ -365,17 +347,8 @@ Environment("Description") = "Execute method with boundary co-ordinates at Botto
 Environment("ExpectedResult") = "Click should work correctly."
 blnResult = VerifyClick(objMobiEdit, "withboundarycoordsBottomLeft")
 
-'Code to close keypad
-strImagePathAfter = Environment("SystemTempDir") & "\" & Replace(Replace(Replace(CStr(Now), "/", ""), " ", "_"), ":", "") & ".bmp" 
-MobiDevice("Phone Lookup").MobiButton("SignIn").CaptureBitmap  strImagePathAfter , True
-If CompareBitmap(strImagePathAfter , strImagePathBefore)  Then
-	MobiDevice("Phone Lookup").ButtonPress eBACK
-	Wait 1
-End If
-
-'Put away focus from Username
-MobiDevice("Phone Lookup").MobiEdit("ed_Password").Set "demo"
-Wait 1
+'Close keypad
+CloseAndroidKeypad
 
 ' Step26: Execute Click with  Boundary coordinates at Bottom-Right corner
 '##########################################################
@@ -386,18 +359,8 @@ Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment(
 Environment("Description") = "Execute method with boundary co-ordinates at Bottom-Right corner"
 Environment("ExpectedResult") = "Click should work correctly."
 blnResult = VerifyClick(objMobiEdit, "withboundarycoordsBottomRight")
-
-'Code to close keypad
-strImagePathAfter = Environment("SystemTempDir") & "\" & Replace(Replace(Replace(CStr(Now), "/", ""), " ", "_"), ":", "") & ".bmp" 
-MobiDevice("Phone Lookup").MobiButton("SignIn").CaptureBitmap  strImagePathAfter , True
-If CompareBitmap(strImagePathAfter , strImagePathBefore)  Then
-	MobiDevice("Phone Lookup").ButtonPress eBACK
-	Wait 1
-End If
-
-'Put away focus from Username
-MobiDevice("Phone Lookup").MobiEdit("ed_Password").Set "demo"
-Wait 1
+'Close keypad
+CloseAndroidKeypad
 
 ' Step27: Execute Click with  Random coordinates
 '##########################################################
@@ -410,17 +373,8 @@ Environment("ExpectedResult") = "Click should work correctly."
 blnResult = VerifyClick(objMobiEdit, "withrandomcoords")
 
 
-'Code to close keypad
-strImagePathAfter = Environment("SystemTempDir") & "\" & Replace(Replace(Replace(CStr(Now), "/", ""), " ", "_"), ":", "") & ".bmp" 
-MobiDevice("Phone Lookup").MobiButton("SignIn").CaptureBitmap  strImagePathAfter , True
-If CompareBitmap(strImagePathAfter , strImagePathBefore)  Then
-	MobiDevice("Phone Lookup").ButtonPress eBACK
-	Wait 1
-End If
-
-'Put away focus from Username
-MobiDevice("Phone Lookup").MobiEdit("ed_Password").Set "demo"
-Wait 1
+'Close keypad
+CloseAndroidKeypad
 
 ' Step28: Execute Click without coordinates
 '##########################################################
@@ -432,18 +386,8 @@ Environment("Description") = "Execute method without  co-ordinates"
 Environment("ExpectedResult") = "Click should work correctly."
 blnResult =  VerifyClick(objMobiEdit, "withoutcoords")
 
-'Code to close keypad
-strImagePathAfter = Environment("SystemTempDir") & "\" & Replace(Replace(Replace(CStr(Now), "/", ""), " ", "_"), ":", "") & ".bmp" 
-MobiDevice("Phone Lookup").MobiButton("SignIn").CaptureBitmap  strImagePathAfter , True
-
-If CompareBitmap(strImagePathAfter , strImagePathBefore)  Then
-	MobiDevice("Phone Lookup").ButtonPress eBACK
-	Wait 1
-End If
-
-'Put away focus from Username
-MobiDevice("Phone Lookup").MobiEdit("ed_Password").Set "demo"
-Wait 1
+'Close keypad
+CloseAndroidKeypad
 
 ' Step29: Execute Click  at only one co-ordinate (Only X)
 '##########################################################
@@ -455,18 +399,8 @@ Environment("Description") = " Execute method with only X co-ordinate"
 Environment("ExpectedResult") = "Click should work correctly."
 blnResult =  VerifyClick(objMobiEdit, "withxvalue")
 
-'Code to close keypad
-strImagePathAfter = Environment("SystemTempDir") & "\" & Replace(Replace(Replace(CStr(Now), "/", ""), " ", "_"), ":", "") & ".bmp" 
-MobiDevice("Phone Lookup").MobiButton("SignIn").CaptureBitmap  strImagePathAfter , True
-
-If CompareBitmap(strImagePathAfter , strImagePathBefore)  Then
-	MobiDevice("Phone Lookup").ButtonPress eBACK
-	Wait 1
-End If
-
-'Put away focus from Username
-MobiDevice("Phone Lookup").MobiEdit("ed_Password").Set "demo"
-Wait 1
+'Close keypad
+CloseAndroidKeypad
 
 ' Step30: Execute Click  at only one co-ordinate (Only Y)
 '##########################################################
@@ -478,18 +412,8 @@ Environment("Description") = "Execute method with only Y co-ordinate"
 Environment("ExpectedResult") = "Click should work correctly."
 blnResult =  VerifyClick(objMobiEdit, "withyvalue")
 
-'Code to close keypad
-strImagePathAfter = Environment("SystemTempDir") & "\" & Replace(Replace(Replace(CStr(Now), "/", ""), " ", "_"), ":", "") & ".bmp" 
-MobiDevice("Phone Lookup").MobiButton("SignIn").CaptureBitmap  strImagePathAfter , True
-
-If CompareBitmap(strImagePathAfter , strImagePathBefore)  Then
-	MobiDevice("Phone Lookup").ButtonPress eBACK
-	Wait 1
-End If
-
-'Put away focus from Username
-MobiDevice("Phone Lookup").MobiEdit("ed_Password").Set "demo"
-Wait 1
+'Close keypad
+CloseAndroidKeypad
 
 ' Step31: Execute Click  at  any valid value
 '##########################################################
@@ -501,18 +425,8 @@ Environment("Description") = "Execute method with any valid co-ordinates"
 Environment("ExpectedResult") = "Click should work correctly."
 blnResult =  VerifyClick(objMobiEdit, "withvalidvalue")
 
-'Code to close keypad
-strImagePathAfter = Environment("SystemTempDir") & "\" & Replace(Replace(Replace(CStr(Now), "/", ""), " ", "_"), ":", "") & ".bmp" 
-MobiDevice("Phone Lookup").MobiButton("SignIn").CaptureBitmap  strImagePathAfter , True
-
-If CompareBitmap(strImagePathAfter , strImagePathBefore)  Then
-	MobiDevice("Phone Lookup").ButtonPress eBACK
-	Wait 1
-End If
-
-'Put away focus from Username
-MobiDevice("Phone Lookup").MobiEdit("ed_Password").Set "demo"
-Wait 1
+'Close keypad
+CloseAndroidKeypad
 
 ' Step32: Execute DblClick  without  co-ordinates
 '##########################################################
@@ -524,18 +438,8 @@ Environment("Description") = "Execute method without co-ordinates"
 Environment("ExpectedResult") = "DblClick  should work correctly."
 blnResult =  VerifyDblClick(objMobiEdit , "withoutcoords") 
 
-'Code to close keypad
-strImagePathAfter = Environment("SystemTempDir") & "\" & Replace(Replace(Replace(CStr(Now), "/", ""), " ", "_"), ":", "") & ".bmp" 
-MobiDevice("Phone Lookup").MobiButton("SignIn").CaptureBitmap  strImagePathAfter , True
-
-If CompareBitmap(strImagePathAfter , strImagePathBefore)  Then
-	MobiDevice("Phone Lookup").ButtonPress eBACK
-	Wait 1
-End If
-
-'Put away focus from Username
-MobiDevice("Phone Lookup").MobiEdit("ed_Password").Set "demo"
-Wait 1
+'Close keypad
+CloseAndroidKeypad
 
 ' Step33: Execute DblClick  with boundary co-ordinates
 '##########################################################
@@ -547,18 +451,8 @@ Environment("Description") = " Execute method with Boundary co-ordinates"
 Environment("ExpectedResult") = "DblClick  should work correctly."
 blnResult =  VerifyDblClick(objMobiEdit , "withboundarycoords") 
 
-'Code to close keypad
-strImagePathAfter = Environment("SystemTempDir") & "\" & Replace(Replace(Replace(CStr(Now), "/", ""), " ", "_"), ":", "") & ".bmp" 
-MobiDevice("Phone Lookup").MobiButton("SignIn").CaptureBitmap  strImagePathAfter , True
-
-If CompareBitmap(strImagePathAfter , strImagePathBefore)  Then
-	MobiDevice("Phone Lookup").ButtonPress eBACK
-	Wait 1
-End If
-
-'Put away focus from Username
-MobiDevice("Phone Lookup").MobiEdit("ed_Password").Set "demo"
-Wait 1
+'Close keypad
+CloseAndroidKeypad
 
 ' Step34: Execute DblClick  with Random co-ordinates
 '##########################################################
@@ -570,18 +464,8 @@ Environment("Description") = "Execute method with Random co-ordinates"
 Environment("ExpectedResult") = "DblClick  should work correctly."
 blnResult =  VerifyDblClick(objMobiEdit , "withrandomcoords") 
 
-'Code to close keypad
-strImagePathAfter = Environment("SystemTempDir") & "\" & Replace(Replace(Replace(CStr(Now), "/", ""), " ", "_"), ":", "") & ".bmp" 
-MobiDevice("Phone Lookup").MobiButton("SignIn").CaptureBitmap  strImagePathAfter , True
-
-If CompareBitmap(strImagePathAfter , strImagePathBefore)  Then
-	MobiDevice("Phone Lookup").ButtonPress eBACK
-	Wait 1
-End If
-
-'Put away focus from Username
-MobiDevice("Phone Lookup").MobiEdit("ed_Password").Set "demo"
-Wait 1
+'Close keypad
+CloseAndroidKeypad
 
 ' Step35: Execute DblClick  with only X  co-ordinate
 '##########################################################
@@ -593,18 +477,8 @@ Environment("Description") = "Execute method with only X Co-ordinate"
 Environment("ExpectedResult") = "DblClick  should work correctly."
 blnResult =  VerifyDblClick(objMobiEdit , "withonlyxcoord") 
 
-'Code to close keypad
-strImagePathAfter = Environment("SystemTempDir") & "\" & Replace(Replace(Replace(CStr(Now), "/", ""), " ", "_"), ":", "") & ".bmp" 
-MobiDevice("Phone Lookup").MobiButton("SignIn").CaptureBitmap  strImagePathAfter , True
-
-If CompareBitmap(strImagePathAfter , strImagePathBefore)  Then
-	MobiDevice("Phone Lookup").ButtonPress eBACK
-	Wait 1
-End If
-
-'Put away focus from Username
-MobiDevice("Phone Lookup").MobiEdit("ed_Password").Set "demo"
-Wait 1
+'Close keypad
+CloseAndroidKeypad
 
 ' Step36: Execute DblClick  with only Y  co-ordinate
 '##########################################################
@@ -616,18 +490,8 @@ Environment("Description") = " Execute method with only Y  Co-ordinate"
 Environment("ExpectedResult") = "DblClick  should work correctly."
 blnResult =  VerifyDblClick(objMobiEdit , "withonlyycoord") 
 
-'Code to close keypad
-strImagePathAfter = Environment("SystemTempDir") & "\" & Replace(Replace(Replace(CStr(Now), "/", ""), " ", "_"), ":", "") & ".bmp" 
-MobiDevice("Phone Lookup").MobiButton("SignIn").CaptureBitmap  strImagePathAfter , True
-
-If CompareBitmap(strImagePathAfter , strImagePathBefore)  Then
-	MobiDevice("Phone Lookup").ButtonPress eBACK
-	Wait 1
-End If
-
-'Put away focus from Username
-MobiDevice("Phone Lookup").MobiEdit("ed_Password").Set "demo"
-Wait 1
+'Close keypad
+CloseAndroidKeypad
 
 ' Step37: Execute LongClick  without  co-ordinates with valid lapse time
 '##########################################################
@@ -639,18 +503,8 @@ Environment("Description") = "Execute method without co-ordinates with valid lap
 Environment("ExpectedResult") = "LongClick  should work correctly."
 blnResult =  VerifyLongClick(objMobiEdit , "validlapsewithoutcoords") 
 
-'Code to close keypad
-strImagePathAfter = Environment("SystemTempDir") & "\" & Replace(Replace(Replace(CStr(Now), "/", ""), " ", "_"), ":", "") & ".bmp" 
-MobiDevice("Phone Lookup").MobiButton("SignIn").CaptureBitmap  strImagePathAfter , True
-
-If CompareBitmap(strImagePathAfter , strImagePathBefore)  Then
-	MobiDevice("Phone Lookup").ButtonPress eBACK
-	Wait 1
-End If
-
-'Put away focus from Username
-MobiDevice("Phone Lookup").MobiEdit("ed_Password").Set "demo"
-Wait 1
+'Close keypad
+CloseAndroidKeypad
 
 ' Step38: Execute LongClick  with boundary co-ordinates
 '##########################################################
@@ -662,18 +516,8 @@ Environment("Description") = " Execute method with Boundary co-ordinates with va
 Environment("ExpectedResult") = "LongClick  should work correctly."
 blnResult =  VerifyLongClick(objMobiEdit , "validlapseboundarycoords") 
 
-'Code to close keypad
-strImagePathAfter = Environment("SystemTempDir") & "\" & Replace(Replace(Replace(CStr(Now), "/", ""), " ", "_"), ":", "") & ".bmp" 
-MobiDevice("Phone Lookup").MobiButton("SignIn").CaptureBitmap  strImagePathAfter , True
-
-If CompareBitmap(strImagePathAfter , strImagePathBefore)  Then
-	MobiDevice("Phone Lookup").ButtonPress eBACK
-	Wait 1
-End If
-
-'Put away focus from Username
-MobiDevice("Phone Lookup").MobiEdit("ed_Password").Set "demo"
-Wait 1
+'Close keypad
+CloseAndroidKeypad
 
 ' Step39: Execute LongClick  with Random co-ordinates
 '##########################################################
@@ -684,19 +528,8 @@ Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment(
 Environment("Description") = " Execute method with Random co-ordinates and valid lapse time"
 Environment("ExpectedResult") = "LongClick  should work correctly."
 blnResult =  VerifyLongClick(objMobiEdit , "validlapserandomcoords") 
-
-'Code to close keypad
-strImagePathAfter = Environment("SystemTempDir") & "\" & Replace(Replace(Replace(CStr(Now), "/", ""), " ", "_"), ":", "") & ".bmp" 
-MobiDevice("Phone Lookup").MobiButton("SignIn").CaptureBitmap  strImagePathAfter , True
-
-If CompareBitmap(strImagePathAfter , strImagePathBefore)  Then
-	MobiDevice("Phone Lookup").ButtonPress eBACK
-	Wait 1
-End If
-
-'Put away focus from Username
-MobiDevice("Phone Lookup").MobiEdit("ed_Password").Set "demo"
-Wait 1
+'Close keypad
+CloseAndroidKeypad
 
 ' Step40: Execute LongClick  with only X  co-ordinate
 '##########################################################
@@ -708,18 +541,8 @@ Environment("Description") = " Execute method with only X Co-ordinate and valid 
 Environment("ExpectedResult") = "LongClick  should work correctly."
 blnResult =  VerifyLongClick(objMobiEdit , "validlapsexcoords") 
 
-'Code to close keypad
-strImagePathAfter = Environment("SystemTempDir") & "\" & Replace(Replace(Replace(CStr(Now), "/", ""), " ", "_"), ":", "") & ".bmp" 
-MobiDevice("Phone Lookup").MobiButton("SignIn").CaptureBitmap  strImagePathAfter , True
-
-If CompareBitmap(strImagePathAfter , strImagePathBefore)  Then
-	MobiDevice("Phone Lookup").ButtonPress eBACK
-	Wait 1
-End If
-
-'Put away focus from Username
-MobiDevice("Phone Lookup").MobiEdit("ed_Password").Set "demo"
-Wait 1
+'Close keypad
+CloseAndroidKeypad
 
 ' Step41: Execute LongClick  with only Y  co-ordinate
 '##########################################################
@@ -731,18 +554,8 @@ Environment("Description") = " Execute method with only Y  Co-ordinate and valid
 Environment("ExpectedResult") = "LongClick  should work correctly."
 blnResult =  VerifyLongClick(objMobiEdit , "validlapseycoords") 
 
-'Code to close keypad
-strImagePathAfter = Environment("SystemTempDir") & "\" & Replace(Replace(Replace(CStr(Now), "/", ""), " ", "_"), ":", "") & ".bmp" 
-MobiDevice("Phone Lookup").MobiButton("SignIn").CaptureBitmap  strImagePathAfter , True
-
-If CompareBitmap(strImagePathAfter , strImagePathBefore)  Then
-	MobiDevice("Phone Lookup").ButtonPress eBACK
-	Wait 1
-End If
-
-'Put away focus from Username
-MobiDevice("Phone Lookup").MobiEdit("ed_Password").Set "demo"
-Wait 1
+'Close keypad
+CloseAndroidKeypad
 
 ' Step42 : Execute LongClick  with valid  values 
 '##########################################################
@@ -754,18 +567,8 @@ Environment("Description") = " Execute method with valid X , Y and Lapsetime val
 Environment("ExpectedResult") = "LongClick  should work correctly."
 blnResult =  VerifyLongClick(objMobiEdit , "withvalidlapsevalidvalue") 
 
-'Code to close keypad
-strImagePathAfter = Environment("SystemTempDir") & "\" & Replace(Replace(Replace(CStr(Now), "/", ""), " ", "_"), ":", "") & ".bmp" 
-MobiDevice("Phone Lookup").MobiButton("SignIn").CaptureBitmap  strImagePathAfter , True
-
-If CompareBitmap(strImagePathAfter , strImagePathBefore)  Then
-	MobiDevice("Phone Lookup").ButtonPress eBACK
-	Wait 1
-End If
-
-'Put away focus from Username
-MobiDevice("Phone Lookup").MobiEdit("ed_Password").Set "demo"
-Wait 1
+'Close keypad
+CloseAndroidKeypad
 
 'Navigate to other screen
 Login "mobilelabs" , "demo"
