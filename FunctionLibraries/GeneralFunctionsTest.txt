@@ -1,0 +1,2615 @@
+'Set environment variables from ALM
+'Environment("platform") = QCUtil.CurrentTestSet.Field("CY_USER_01")
+'Environment("osversion") = QCUtil.CurrentTestSet.Field("CY_USER_02")
+'Environment("devicemodel") = QCUtil.CurrentTestSet.Field("CY_USER_03")
+'Environment("appid") = QCUtil.CurrentTestSet.Field("CY_USER_04")
+'Environment("buildnumber") = QCUtil.CurrentTestSet.Field("CY_USER_05")
+'Environment("protocolversion") = QCUtil.CurrentTestSet.Field("CY_USER_06")
+'Environment("agentversion") = QCUtil.CurrentTestSet.Field("CY_USER_07")
+'Environment("dcip") = QCUtil.CurrentTestSet.Field("CY_USER_08")
+'Environment("deviceorientation") = QCUtil.CurrentTestSet.Field("CY_USER_09")
+'Environment("devicescale") = QCUtil.CurrentTestSet.Field("CY_USER_10")
+'Environment("dcuser") = QCUtil.CurrentTestSet.Field("CY_USER_11")
+'Environment("dcpassword") = QCUtil.CurrentTestSet.Field("CY_USER_12")
+
+'Fetch values from %\MobileLabsAutomationFramework\Environment\TestSet.txt
+ReadEnvironmentVariables
+
+''product version
+strProductVersion = Environment("buildnumber") 
+
+'Fetch product version from build
+arrValue =Split(Environment("buildnumber") , ".")
+Environment("strProductVersion") = arrValue(0) & "." &arrValue(1)
+
+'Fetch Build type
+If  arrValue(2) > 600 Then
+	Environment("strBuildType") = "Nightly"
+Else
+	Environment("strBuildType")  = "Production"
+End If
+
+
+'Get  IP address
+strIP = ""
+Set objWMI = GetObject("winmgmts:\\.\root\cimv2")
+Set colNICs = objWMI.ExecQuery("Select * From Win32_NetworkAdapter WHERE NetConnectionID LIKE 'Local Area Connection'")
+For each objNIC in colNICs
+	Set colNICcfg = objWMI.ExecQuery("Select * From Win32_NetworkAdapterConfiguration Where MACAddress = '" & objNIC.MACAddress & "' AND IPEnabled = 'true'")
+	For each objItem in colNICcfg
+		Environment("strIP") = objItem.IPAddress(0)
+	Next
+Next
+
+Environment("strProduct") = "Trust"
+
+''Download all required files to %temp%\MobileLabsAutomation
+'DownloadQCAttachments
+
+'Copy all files from %\MobileLabsAutomation\Tools and it's subfolders to SystemTempDir/MobileLabsAutomation
+CopyToolsToTemp
+
+''Launch Trust Ai for the device set in ALM
+LaunchdeviceViewer
+
+'##########################################################################################################################
+''@Sub:        		ReadEnvironmentVariables
+''@Description: 	Fetch values from %\MobileLabsAutomationFramework\Environment\TestSet.txt
+''@Created By: 		Naveen 
+''@Created On: 		10-Sept-2015
+''@Last Updated:	17-Jan-2018
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: 		ReadEnvironmentVariables
+''--------------------------------------------------------------------------------------------------------------------------
+
+Sub ReadEnvironmentVariables
+
+	Const ForReading = 1
+	Dim arrData,arr2Data()
+
+	'Get path to the TestSet.txt
+	strTestSetPath = GetRootFolderPath & "Environment\TestSet.txt"
+	
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	Set objFile = objFSO.OpenTextFile(strTestSetPath, ForReading, False)
+	
+	strData = ""
+	'Read all lines from TestSet.txt and store them in strData
+	Do While objFile.AtEndOfStream <> True
+		strData = strData & objFile.ReadLine() & ","
+	Loop
+	
+	objFile.Close
+	
+	'Pull the data out of strData and store in a 1D array arrData
+	strData = Left(strData,Len(strData)-1)
+	arrData = Split(strData, ",", -1, 1)
+	
+	'Pull the data out of arrData and store it in a 2D array arr2Data
+	ReDim arr2Data(UBound(arrData),1)
+	
+	For s = 0 To UBound(arrData)
+		If arrData(s) <> "" Then
+			arr2Data(s,0) = Split(arrData(s),"=",-1)(0)
+			arr2Data(s,1) = Split(arrData(s),"=",-1)(1)
+		End If
+	Next
+	
+	'Read values from the 2D array
+	intColCount = UBound(arr2Data)
+	
+	For i = 0 To intColCount
+		Select Case LCase(arr2Data(i,0))
+			Case "dcversion"
+				Environment("dcversion") = arr2Data(i,1)
+			Case "trustversion"
+				Environment("buildnumber") = arr2Data(i,1)
+			Case "agentversion"
+				Environment("agentversion") = arr2Data(i,1)
+			Case "protocolversion"
+				Environment("protocolversion") = arr2Data(i,1)
+			Case "serveruser"
+				Environment("serveruser") = arr2Data(i,1)
+			Case "serverpassword"
+				Environment("serverpassword") = arr2Data(i,1)
+			Case "dcip"
+				Environment("dcip") = arr2Data(i,1)
+			Case "dcuser"
+				Environment("dcuser") = arr2Data(i,1)
+			Case "dcpassword"
+				Environment("dcpassword") = arr2Data(i,1)
+			Case "devicemodel"
+				Environment("devicemodel") = arr2Data(i,1)
+			Case "deviceos"
+				Environment("platform") = arr2Data(i,1)
+			Case "deviceosversion"
+				Environment("osversion") = arr2Data(i,1)
+			Case "viewerorientation"
+				Environment("deviceorientation") = arr2Data(i,1)
+			Case "devicename"
+				Environment("devicename") = arr2Data(i,1)
+			Case "appid"
+				Environment("appid") = arr2Data(i,1)
+			Case "nativeautomation"
+				Environment("nativeautomation") = arr2Data(i,1)
+			Case "addins"
+				Environment("addins") = arr2Data(i,1)
+		End Select
+	Next
+	 
+	Set objFile = Nothing
+	Set objFSO = Nothing
+
+End Sub
+
+
+'##########################################################################################################################
+''@Sub:        		LaunchdeviceViewer
+''@Description: 	This sub connects to the device setup in ALM TestSet fields. If the device can't be connected to then
+''					a message box will be displayed which will ask the user to connect manually and then continue
+''@Created By: 		Naveen 
+''@Created On: 		05/28/2013
+''@Last Updated:	04/16/2014
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: 		LaunchdeviceViewer
+''--------------------------------------------------------------------------------------------------------------------------
+
+Sub LaunchdeviceViewer
+
+	'Check if Mobile Labs Trust Add-in is loaded or not
+	Set objQTP = GetObject("","QuickTest.Application")
+	blnAddInEnabled = False
+	For intCounter = 1 To objQTP.Addins.Count
+		If StrComp(Replace(objQTP.Addins.Item(intCounter).Name, " ", ""),  "mobilelabstrust", 1) = 0 Then
+			If StrComp(Replace(objQTP.Addins.Item(intCounter).Status, " ", ""),  "active", 1) = 0 Then
+				blnAddInEnabled = True
+			End If
+			Exit For
+		End If
+	Next
+	
+	Set objQTP = Nothing
+	
+	If blnAddInEnabled Then
+		Set objDevice = MobiDevice("Class Name:=MobiDevice")
+	Else
+		Set objDevice = WpfWindow("classname:=MobileLabs.Trust.Cayenne.MainWindow")
+	End If
+
+	strPassSalt = "pass-56ffc8c3cd680bf96ba600943f149b92"
+'	strConnectionString = "Server=localhost;Port=5433;Database=deviceconnect_app;User Id=" &_
+'	"deviceconnect_app;Password=" & strPassSalt
+	strConnectionString = "Driver={PostgreSQL ANSI};database=deviceconnect_app;server=127.0.0.1;port=5433;uid=deviceconnect_app;" _
+	& "User ID=deviceconnect_app;password=pass-56ffc8c3cd680bf96ba600943f149b92;"
+	
+	'If Trust Ai is already running then verify that it is the correct OS, osversion and Device Model
+	If blnAddInEnabled Then
+		If objDevice.Exist(2) Then
+			strDeviceType = objDevice.GetROProperty("devicetype")
+			strOSVersion = objDevice.GetROProperty("osversion")
+			strPlatform = objDevice.GetROProperty("platform")
+			
+			'Code to handle changed platform property values in iOS 10.x and Android 7.x
+			Select Case LCase(strPlatform)
+				Case "iphone os"
+					strPlatform = "iOS"
+				Case "androidos"
+					strPlatform = "Android"					
+				Case "ios"
+					strPlatform = "iOS"
+				Case "android"
+					strPlatform = "Android"
+			End Select
+			
+			If strPlatform = "Android" Then
+				strDeviceModelQuery = "select friendly_model from device where model='" & strDeviceType & "';" 
+				strDeviceModel = FetchPostgresData(Environment("dcip"), strConnectionString, strDeviceModelQuery)
+			Else
+				strDeviceModel = strDeviceType
+			End If
+			
+			
+			
+			If InStr(1, Environment("devicemodel"), strDeviceModel, 1) > 0 _ 
+			AND InStr(1, strOSVersion, Environment("osversion"), 1) > 0 _
+			AND InStr(1, strPlatform, Environment("platform"), 1) > 0 Then
+				Exit Sub
+			End If	
+		End If
+	End If
+	SystemUtil.CloseProcessByName "MobileLabs.deviceViewer.exe"
+	Wait 1
+	
+	'Make sure all values are defined in TestSet.txt if deviceName has not been provided
+	If Len(Environment("devicename")) = 0 Then	
+		blnInfo = False
+		strVars = ""
+		If Len(Environment("platform")) = 0 Then
+			strVars = strVars & "platform, "
+		End If
+		If Len(Environment("osversion")) = 0 Then
+			strVars = strVars & "osversion, "
+		End If
+		If Len(Environment("devicemodel")) = 0 Then
+			strVars = strVars & "devicemodel, "
+		End If
+		If Len(Environment("appid")) = 0 Then
+			strVars = strVars & "appid, "
+		End If
+		If Len(Environment("buildnumber")) = 0 Then
+			strVars = strVars & "buildnumber, "
+		End If
+		If Len(Environment("protocolversion")) = 0 Then
+			strVars = strVars & "protocolversion, "
+		End If
+		If Len(Environment("agentversion")) = 0 Then
+			strVars = strVars & "agentversion, "
+		End If
+		If Len(Environment("dcip")) = 0 Then
+			strVars = strVars & "dcip, "
+		End If
+		If Len(Environment("deviceorientation")) = 0 Then
+			strVars = strVars & "deviceorientation, "
+		End If
+		If Len(Environment("nativeautomation")) = 0 Then
+			strVars = strVars & "nativeautomation, "
+		End If
+		If strVars = "" Then
+			blnInfo = True
+		End If
+	Else
+		Print "Device name: " & Environment("devicename") & " has been provided so the device connection would be made in the test!"
+		Exit Sub
+	End If
+	
+	If Not(blnInfo) Then
+		MsgBox "One of these fields don't have a value defined in TestSet: " & strVars & VBNewLine _
+		& "Please add these values and run the Testset again!"
+		ExitTest
+	End If
+	
+	'Exit if deviceName is already provided in TestSet.txt
+	If Len(Environment("devicename")) > 0 Then	
+		Print "Device name has been provided so the device connection would be made in the test, aborting launch!"
+		Exit Sub
+	End If
+
+	'Add cases for platforms here. Android and iOS
+	If Trim(LCase(Environment("platform"))) = "android" Then
+		Environment("platform") = 1
+	ElseIf Trim(LCase(Environment("platform"))) = "ios" Then
+		Environment("platform") = 0
+	End If
+			
+	
+	
+	'Get devicename from the dB for the passed in devicemodel, os and os versions
+	strDeviceQuery = "select name from device where friendly_model='" & Environment("devicemodel") & "' AND operating_system_version='" & Environment("osversion") & "' AND operating_system=" & Environment("platform") & " AND availability=2;"
+	strDeviceName = FetchPostgresData(Environment("dcip"), strConnectionString, strDeviceQuery)
+	
+	'Get App Name from dB for the passed in app id
+	strAppQuery = "select display_name from application where application_identifier ~ '.*" & Environment("appid") & "';"
+	strAppName = FetchPostgresData(Environment("dcip"), strConnectionString, strAppQuery)
+	
+	
+	'If an empty GUID is returned then ask the user to manually connect to the device to continue
+	If IsEmpty(strDeviceName) Then
+		MsgBox "No Device Name could be fetched. Please connect to the device manually via dC UI and hit OK to continue!" _
+		& VbNewLine & "If you want to use nativeautomation then make sure you select that option in the UI!"
+		Exit Sub
+	End If
+	
+	'Launch device Viewer via CLI
+	If Environment("nativeautomation") Then
+'		strConnectParam = Environment("dcip") & " " & Environment("dcuser") & " " & Environment("dcpassword") & " -device " _
+'						& Chr(34) & strDeviceName & Chr(34) & " -scale " & Environment("devicescale") & " -orientation " _
+'						& Environment("deviceorientation") & " -nativeautomation -r " & Chr(34) & strAppName & Chr(34)
+		strConnectParam = Environment("dcip") & " " & Environment("dcuser") & " " & Environment("dcpassword") & " -device " _
+						& Chr(34) & strDeviceName & Chr(34) & " -orientation " _
+						& Environment("deviceorientation") & " -nativeautomation -r " & Chr(34) & strAppName & Chr(34)
+	Else
+'		strConnectParam = Environment("dcip") & " " & Environment("dcuser") & " " & Environment("dcpassword") & " -device " _
+'						& Chr(34) & strDeviceName & Chr(34) & " -scale " & Environment("devicescale") _
+'						& " -orientation " & Environment("deviceorientation") & " -r " _
+'						& Chr(34) & strAppName & Chr(34)
+		strConnectParam = Environment("dcip") & " " & Environment("dcuser") & " " & Environment("dcpassword") & " -device " _
+						& Chr(34) & strDeviceName & Chr(34) & " -orientation " & Environment("deviceorientation") & " -r " _
+						& Chr(34) & strAppName & Chr(34)
+	End If
+						
+	'strCLIPath = Split(GetFilePath("dc-cli.exe"), "dc-cli.exe")(0)
+	'SystemUtil.Run "dc-cli.exe", strConnectParam , strCLIPath
+	strLaunchDevice = """" & GetFilePath("dc-cli.exe") & """" & " " & strConnectParam
+	
+	SystemUtil.CloseProcessByName "cmd.exe"
+	SystemUtil.Run "cmd.exe"
+	Wait 1
+	
+	Window("regexpwndclass:=ConsoleWindowClass").Activate
+	Window("regexpwndclass:=ConsoleWindowClass").Type strLaunchDevice
+	Wait 1
+	Window("regexpwndclass:=ConsoleWindowClass").Type micReturn
+	Wait 1
+	If Dialog("text:=Open File - Security Warning").Exist(3) Then
+		Dialog("text:=Open File - Security Warning").WinButton("text:=&Run").Click
+		Dialog("text:=Open File - Security Warning").WinButton("text:=&Run").Click
+	End If
+	
+	'Check if the MobileLabs.deviceViewer.exe process is running or not. Wait for 30 seconds max
+	intCount = 0
+	blnTrustAi = False
+
+	Do While intCount < 30
+		Set objWMIService = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2") 
+		Set colProcess = objWMIService.ExecQuery _
+		("Select * from Win32_Process where name like 'MobileLabs.deviceViewer.exe'")
+		If colProcess.Count > 0 Then
+			blnTrustAi = True
+			Set colProcess = Nothing
+			Set objWMIService = Nothing
+			Wait(10)
+			Exit Do
+		End If
+
+		Set colProcess = Nothing
+		Set objWMIService = Nothing
+		Wait(1)
+		intCount = intCount + 1
+	Loop
+	SystemUtil.CloseProcessByName "cmd.exe"
+	On Error Resume Next
+    intExitCount = 1
+'	Do While IsEmpty(MobiDevice("micclass:=MobiDevice").GetROProperty("platform"))
+	Do While IsEmpty(objDevice.GetROProperty("width"))
+		intExitCount = intExitCount + 1
+		If intExitCount > 10 Then 'Wait max 200 seconds for deviceViewer to launch device screen
+			Exit Do
+		End If
+	Loop
+	On Error GoTo 0
+
+	'If the device couldn't be connected then report a failure and exit test
+	If Not(objDevice.Exist) Then
+		Reporter.ReportEvent micFail, "Launch deviceViewer", "Failed to make connection: " & VbNewLine &_
+		"Device Model: " & strDeviceModel &_
+		"Device OS and OS Version: " & strOS & ", " & strOSVersion &_
+		"GUID: " & strGUID &_
+		"App: " & strApp
+		ExitTest
+	End If
+	
+	'Resize the viewer to fit desktop window
+	If FitViewerIntoDesktop Then
+		Print "Viewer scaled down to fit into desktop!"
+	Else
+		Print "Failed to scale down viewer, the test would run on the default scale!"
+	End If
+	
+End Sub
+
+
+'##########################################################################################################################
+''@Function:        FitViewerIntoDesktop
+''@Description: 	Resizes the desktop viewer to fit in desktop window
+''@Created By: 		Naveen
+''@Created On: 		08/08/2018
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example:   	If FitViewerIntoDesktop Then
+''					Print "Resized"
+''				Else
+''					Print "Resizing failed"
+''				End If
+''--------------------------------------------------------------------------------------------------------------------------
+Function FitViewerIntoDesktop
+	
+	'Wait for the viewer to connect
+	If MobiDevice("name:=*").Exist(60) then
+	
+		FitViewerIntoDesktop = True
+		
+		If Window("regexpwndtitle:=.*deviceViewer","height:=228").Exist(2) Then
+			FitViewerIntoDesktop = False
+			Exit Function
+		End If
+		
+		'Update the viewer scale if MobiDevice height is more than the screen height
+		intScreenHeight = Window("object class:=Shell_TrayWnd").GetROProperty("height") + Window("object class:=Shell_TrayWnd").GetROProperty("y")
+		intWindowHeight = Window("title:=.*deviceViewer").GetROProperty("height")
+		
+		'Move the deviceViewer Window near the top left of the screen
+		Window("title:=.*deviceViewer").Move 15,10
+		Wait 5
+		
+		intStartTime = Now()
+		intScaleDown = 25
+		
+		Do While intWindowHeight > intScreenHeight
+		    intScale = CInt(MobiDevice("name:=*").GetROProperty("viewerscale"))
+		    
+		    'Exit if scale is 25%
+		    If intScale = 25 Then
+		    	Print "The current viewer scale is: " & intScale
+		    	Exit Do
+		    End If
+		    intSetScale = Abs(CInt(intScale - intScaleDown))
+		    'Scale down to 25% at most
+		    If intSetScale >= 25 Then
+		    	MobiDevice("name:=*").Scale intSetScale
+		    ElseIf (intScale - 25) < 0 Then
+		    	Print "The current viewer scale is: " & intScale
+		    	Exit Do
+		    End If
+		    
+		    'Sync for the scale down
+		    Window("title:=.*deviceViewer").WaitProperty "height", micLessThan(intWindowHeight), 5000
+		    intWindowHeight = Window("title:=.*deviceViewer").GetROProperty("height")
+		    
+		    'Exit if viewer height is lessthanOrequalTo 600 OR 2 minutes have passed attempting to scale down
+		    'Keeping 600 as the minimum height as this would fit into most of the monitors
+		    If intWindowHeight <= 600 Then
+		        Exit Do
+		    ElseIf Minute(Now() - intStartTime) >= 2 Then
+		    	FitViewerIntoDesktop = False
+		    	Print "[WARNING] Failed to scale down the device. The current viewer scale is: " & intScale
+		    	Exit Do
+		    End If
+		    intScaleDown = intScaleDown-5
+		    If intScaleDown = 0 Then
+		    	intScaleDown = 5
+		    End If
+		Loop
+		
+	Else
+		FitViewerIntoDesktop = False
+	End if
+
+End Function
+
+
+'##########################################################################################################################
+''@Function:        FetchGUID
+''@Description: 	Connects to postgres db and gets back the GUID for a device
+''@Created By: 		Naveen
+''@Created On: 		08/19/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	strHUB 
+''@Param Type: 		String
+''@Param Drtn: 		In
+''@Param Desc: 		IP of the dC box
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	strConnectionString 
+''@Param Type: 		String
+''@Param Drtn: 		In
+''@Param Desc: 		Connection string to establish connection with postgres db
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name: 		strQuery
+''@Param Type: 		String
+''@Param Drtn: 		In
+''@Param Desc: 		db query to be executed
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example:   	strConnectionString = "Server=localhost;Port=5433;Database=deviceconnect_app;User Id=deviceconnect_app;Password=pass-56ffc8c3cd680bf96ba600943f149b92"
+''				strQuery = "select name from device where friendly_model='iPhone 6 Plus' AND operating_system_version='9.3' AND operating_system=0 AND availability=2;"
+''				strHub = "10.10.0.33"
+''				Print FetchGUID(strHUB, strConnectionString, strQuery)
+''--------------------------------------------------------------------------------------------------------------------------
+
+'Function FetchGUID(strHUB, strConnectionString, strQuery)
+'	SystemUtil.CloseProcessByName "cmd.exe"
+'	SystemUtil.Run "cmd.exe"
+'	
+'	strStartPlink = """" & GetFilePath("plink.exe") & """" & " -L 5433:127.0.0.1:5432 -ssh -P 22 -2 -C -l deviceconnect -pw GoMobile! " & strHUB
+'	
+'	Window("regexpwndclass:=ConsoleWindowClass").Highlight
+'	Wait 2
+'	Window("regexpwndclass:=ConsoleWindowClass").Type "cd\"
+'	Window("regexpwndclass:=ConsoleWindowClass").Type micReturn
+'	Wait 2
+'	Window("regexpwndclass:=ConsoleWindowClass").Type strStartPlink
+'	Window("regexpwndclass:=ConsoleWindowClass").Type micReturn
+'	
+'	Wait 10
+'		
+'	Set GetGUID = DotNetFactory.CreateInstance("FetchDeviceGUID.GetGUID", GetFilePath("FetchDeviceGUID.dll"))
+'	FetchGUID = GetGUID.ExecuteQuery(strConnectionString, strQuery)
+'	SystemUtil.CloseProcessByName "cmd.exe"
+'End Function
+
+'##########################################################################################################################
+''@Function:        FetchPostgresData
+''@Description: 	Connects to postgres db via plink and ADODB.Connection and executes the query then returns the first item in first column
+''@Created By: 		Naveen
+''@Created On: 		2-Mar-2017
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	strHUB 
+''@Param Type: 		String
+''@Param Drtn: 		In
+''@Param Desc: 		IP of the dC box
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	strConnectionString 
+''@Param Type: 		String
+''@Param Drtn: 		In
+''@Param Desc: 		Connection string to establish connection with postgres db
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name: 		strQuery
+''@Param Type: 		String
+''@Param Drtn: 		In
+''@Param Desc: 		db query to be executed
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example:   	strConnectionString = "Server=localhost;Port=5433;Database=deviceconnect_app;User Id=deviceconnect_app;Password=pass-56ffc8c3cd680bf96ba600943f149b92"
+''				strQuery = "select name from device where friendly_model='iPhone 6 Plus' AND operating_system_version='9.3' AND operating_system=0 AND availability=2;"
+''				strHub = "10.10.0.33"
+''				Print FetchPostgresData(strHUB, strConnectionString, strQuery)
+''--------------------------------------------------------------------------------------------------------------------------
+
+Function FetchPostgresData(strHUB, strConnectionString, strQuery)
+
+	Dim objCon,objRs	
+
+	SystemUtil.CloseProcessByName "cmd.exe"
+	SystemUtil.Run "cmd.exe"
+	
+	'Establish connect with remote dB using plink
+	strStartPlink = """" & GetFilePath("plink.exe") & """" & " -L 5433:127.0.0.1:5432 -ssh -P 22 -2 -C -l deviceconnect -pw GoMobile! " & strHUB
+	
+	Wait 1
+	Window("regexpwndclass:=ConsoleWindowClass").Activate
+	Wait 2
+	Window("regexpwndclass:=ConsoleWindowClass").Type strStartPlink
+	Window("regexpwndclass:=ConsoleWindowClass").Type micReturn
+	
+	Wait 10
+	
+	'Get data from dB
+	Set objCon = CreateObject("ADODB.Connection")
+	Set objRs = CreateObject("ADODB.Recordset")
+	
+	objCon.open strConnectionString
+	objRs.open strQuery,objCon
+	
+	FetchPostgresData = objRs.Fields(0)
+	
+	Set objRs = Nothing
+	Set objCon = Nothing
+	
+	Window("regexpwndclass:=ConsoleWindowClass").Highlight
+	Wait 2
+	Window("regexpwndclass:=ConsoleWindowClass").Type "exit"
+	Window("regexpwndclass:=ConsoleWindowClass").Type micReturn
+	Wait 1
+	SystemUtil.CloseProcessByName "cmd.exe"
+	
+End Function
+
+
+'##########################################################################################################################
+''@Function:        ReportFailure
+''@Description: 	Populates the Defect logging information in excel of format : PlatformName_TestScriptName_Report.xlsx
+''@Created By: 		Manisha
+''@Created On: 		05/24/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	MethodName 
+''@Param Type: 		String
+''@Param Drtn: 		In
+''@Param Desc: 		The name of method for which failure is to be reported
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name: 		Summary
+''@Param Type: 		String
+''@Param Drtn: 		In
+''@Param Desc: 		Summary of the failure
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name: 		Component
+''@Param Type: 		String
+''@Param Drtn: 		In
+''@Param Desc: 		Component for which defect is to be raised  eg : QTPAddin , ObjectManager
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	Details 
+''@Param Type: 		String
+''@Param Drtn: 		In
+''@Param Desc: 		Details regarding the failure 
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name: 		ActualResult
+''@Param Type: 		String
+''@Param Drtn: 		In
+''@Param Desc: 		Actual behaviour of the method which failed
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name: 		ExpectedResult
+''@Param Type: 		String
+''@Param Drtn: 		In
+''@Param Desc: 		Expected behaviour of the method which failed
+''--------------------------------------------------------------------------------------------------------------------------
+''@Return Type: 	NA
+''@Return Desc: 	NA
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example:   		MethodName= "Click"
+'					Summary= "Click Not Working"
+'					Detail= "Click method on Button is Not working"
+'					ActualResult="Click Not Working"
+'					ExpectedResult="Click on Button should Work"
+'					ReportFailure MethodName,Summary,Detail,ActualResult,ExpectedResult
+
+''--------------------------------------------------------------------------------------------------------------------------
+Function ReportFailure(StrMethodName ,StrSummary ,StrComponent, StrDetails ,StrActualResult , StrExpectedResult )
+	'code to find Automation Framework path begins here
+	'=============================================================================================
+		Set objFSO = CreateObject("Scripting.FileSystemObject")
+		strCurrentPath = Environment("TestDir")
+		StrMethodName = Environment("MobiObjectClass") & "_" & StrMethodName
+		
+		'Loop until "MobileLabs Automation Framework" folder is found
+		blnParentFolderFound = True
+		Do While Replace(Split(strCurrentPath,"\")(UBound(Split(strCurrentPath,"\"))), " ", "") <> "MobileLabsAutomationFramework"
+			strCurrentPath = objFSO.GetParentFolderName(strCurrentPath)
+			'Exit if reaches the system drive
+			If InStr(1, strCurrentPath, "\") = 0 Then
+				blnParentFolderFound = False
+				Exit Do
+			End If
+		Loop
+		
+		'Define the path of the Root Folder: <MobileLabs Automation Framework>
+		If blnParentFolderFound Then
+			If Right(strCurrentPath,1) <> "\" Then
+				strCurrentPath = strCurrentPath & "\"
+			End If
+		End If
+	'code to find Automation Framework path ends here
+	'========================================================================
+
+	'Declarations
+	
+	Dim StrPathForImage
+	Dim StrPathForLog
+	Dim StrMobiPlatform
+	Dim StrDeviceName
+	Dim StrTestName
+	Dim StrReportFilePath
+	Dim StrFolderPath
+	Dim StrReportFileName
+	Dim StrAttachmentsPaths
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	Set objExcel = CreateObject("Excel.Application")
+	objExcel.Visible = False
+	Set objQTP = CreateObject("QuickTest.Application")
+	
+	
+	'Finding current test  script name 
+	StrTestName = objQTP.Test.Name
+	
+	StrFolderPath = strCurrentPath&"MobileLabs Tests\"
+	Set SearchFolder = objFSO.GetFolder(StrFolderPath)
+	Set PlatformFolders = SearchFolder.SubFolders
+	For each temFolder in PlatformFolders
+		'Calling Sub to fetch device name 
+		StrDeviceName= SearchSubFolders(temFolder, StrTestName)
+		If  StrDeviceName <> "" Then
+			StrMobiPlatform = temFolder.Name
+			Exit For 
+		End If
+	Next
+
+	'Settting name of the Jira Bug Logging Report file and attachments
+	StrReportFileName = StrMobiPlatform&"_"&StrDeviceName&"_"&StrTestName&"_Report"
+	StrReportFilePath = strCurrentPath&"DefectReporting\AnalyzeDefects\"& StrReportFileName&".xlsx"
+	StrPathForImage =  strCurrentPath&"DefectReporting\Screenshots\"&StrMobiPlatform&"_"&StrDeviceName&"_"&StrTestName&"_"&StrMethodName&"_SS.png"
+	StrPathForLog =  strCurrentPath&"DefectReporting\LogFiles\"&StrMobiPlatform&"_"&StrDeviceName&"_"&StrTestName&"_"&StrMethodName&"_log.txt"
+
+	'callng sub for saving log file
+	SaveLogFile(StrPathForLog)
+
+	'calling sub for saving screenshot
+	CaptureScreenshot(StrPathForImage)
+	
+	'Forming string consisiting of attachment paths separated by commas
+	If(objFSO.FileExists(StrPathForLog)) Then 
+		StrAttachmentsPaths = StrPathForLog & ","
+	End If
+	If (objFSO.FileExists(StrPathForImage)) Then
+		StrAttachmentsPaths = StrAttachmentsPaths&StrPathForImage
+	Else
+		StrAttachmentsPaths = Replace (StrAttachmentsPaths , "," ,"")
+	End If
+	 
+	If Not  objFSO.FileExists(StrReportFilePath) Then
+			'the report file does not exist for the current test
+			Set ObjWorkBook = objExcel.Workbooks.Add()
+			ObjWorkBook.SaveAs StrReportFilePath
+			For sheetCounter = 1  to  objExcel.Worksheets.Count-1
+			objExcel.Worksheets(sheetCounter).Delete
+			Next
+			Set NewSheet = objExcel.Sheets.Item(1)
+			NewSheet.Name = StrMethodName
+			
+			NewSheet.Cells(1,1) = "Summary"
+			NewSheet.Cells(1,2) = "Component"
+			NewSheet.Cells(1,3) = "Details"
+			NewSheet.Cells(1,4) = "ActualResult"
+			NewSheet.Cells(1,5) = "ExpectedResult"
+			NewSheet.Cells(1,6) = "Attachments"
+			NewSheet.Cells(2,1) =  StrSummary 
+			NewSheet.Cells(2,2) =  StrComponent
+			NewSheet.Cells(2,3) =  StrDetails
+			NewSheet.Cells(2,4) =  StrActualResult
+			NewSheet.Cells(2,5) =  StrExpectedResult
+			NewSheet.Cells(2,6) =  StrAttachmentsPaths
+			
+			Set objRange = NewSheet.UsedRange
+			objRange.EntireColumn.Autofit()
+			objExcel.ActiveWorkbook.Save
+			objExcel.Quit
+			Set objExcel = Nothing
+			Exit Function
+	Else 
+			'the report file exist for the current test
+			objExcel.Workbooks.Open StrReportFilePath
+			
+			For sheetCounter =1 to objExcel.Sheets.Count
+			TempSheetName = objExcel.Sheets(sheetCounter).Name
+			If  TempSheetName = StrMethodName Then
+					'The function is called for a method name more than once within the same test
+					LastRow = objExcel.Worksheets(sheetCounter).UsedRange.Rows.Count
+					NextRow = LastRow+1
+					Set NewSheet =objExcel.Sheets(sheetCounter)
+					'appending the input data to the already existing sheet
+					NewSheet.Cells(NextRow,1) =  StrSummary 
+					NewSheet.Cells(NextRow,2) =  StrComponent
+					NewSheet.Cells(NextRow,3) =  StrDetails
+					NewSheet.Cells(NextRow,4) =  StrActualResult
+					NewSheet.Cells(NextRow,5) =  StrExpectedResult
+					NewSheet.Cells(NextRow,6) =  StrAttachmentsPaths
+
+					Set objRange = NewSheet.UsedRange
+					objRange.EntireColumn.Autofit()
+					objExcel.ActiveWorkbook.Save
+					objExcel.Quit
+					Set objExcel = Nothing
+					Exit Function
+			End If
+			Next
+
+			'Code added to handle sheet name with length more then 31 characters
+			Set NewSheet =objExcel.Sheets.Add
+			If Len(StrMethodName) > 31 Then
+				NewSheet.Name = Replace(StrMethodName , "Mobi" , " ")
+			Else
+				NewSheet.Name = StrMethodName
+			End If
+				
+			NewSheet.Cells(1,1) = "Summary"
+			NewSheet.Cells(1,2) = "Component"
+			NewSheet.Cells(1,3) = "Details"
+			NewSheet.Cells(1,4) = "ActualResult"
+			NewSheet.Cells(1,5) = "ExpectedResult"
+			NewSheet.Cells(1,6) = "Attachments"
+			NewSheet.Cells(2,1) =  StrSummary 
+			NewSheet.Cells(2,2) =  StrComponent 
+			NewSheet.Cells(2,3) =  StrDetails
+			NewSheet.Cells(2,4) =  StrActualResult
+			NewSheet.Cells(2,5) =  StrExpectedResult
+			NewSheet.Cells(2,6) =  StrAttachmentsPaths
+			
+			Set objRange = NewSheet.UsedRange
+			objRange.EntireColumn.Autofit()
+			objExcel.ActiveWorkbook.Save
+			objExcel.Quit
+			Set objExcel = Nothing
+	End If
+End Function
+
+
+
+'##########################################################################################################################
+''@Function:        SearchSubFolders
+''@Description: 	Search all folders in the specified  path for  the specified folder , and return its parent folder's name.
+''@Created By: 		Manisha
+''@Created On: 		05/24/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	SearchFolder 
+''@Param Type:   	String
+''@Param Drtn: 		In
+''@Param Desc: 		The Path of the target folder , where search is to be made
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name: 		StrTestName
+''@Param Type: 		String
+''@Param Drtn: 		In
+''@Param Desc: 		Name of the folder to be searched.
+''--------------------------------------------------------------------------------------------------------------------------
+''@Return Type: 	String
+''@Return Desc: 	Name of the parent folder  of the Folder being searched.
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: 		StrMobiPlatform = SearchPlatformName("SearchFolder", "StrTestName")
+''--------------------------------------------------------------------------------------------------------------------------
+
+
+
+Function  SearchSubFolders(StrSearchFolder ,StrTestName )
+
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	Dim TempFolder
+	Set InnerFolders = StrSearchFolder.SubFolders
+	
+	For each TempFolder in InnerFolders
+		'For each foder  in the input folder path
+		Set FilesToFetchFrom = objFSO.GetFolder(TempFolder)
+		Set TestFolders = FilesToFetchFrom.SubFolders
+
+		For each TempTestFolder in TestFolders
+			'for each subfolder in a folder , if name of the subfolder same as the folder name being searched for 
+			If  (ucase (TempTestFolder.Name) = ucase (StrTestName)) Then
+				Set FetchedTestFolder = objFSO.GetFolder(TempTestFolder)
+				'Fetching and returning the parent folder name for the subfolder found.
+				StrMobiPlatform = FetchedTestFolder.ParentFolder.Name
+				SearchSubFolders = StrMobiPlatform
+				'Exit from function as  test names are unique.
+				Exit Function
+			End If
+		Next
+	Next
+
+End Function
+
+
+
+'##########################################################################################################################
+''@Function:         LaunchIOSApp
+''@Description:   Launches the passed in app if present else returns False
+''@Return Type:	Boolean
+''@Created By:   Manisha
+''@Created On:  07/20/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  ObjSwipeRegion 
+''@Param Type:   Object
+''@Param Drtn: 		In
+''@Param Desc: 	The object referring to the region of the mobile device where swipe/scroll gesture is to be executed
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  ObjAppImage 
+''@Param Type:   Object
+''@Param Drtn: 		In
+''@Param Desc: 	The image object referring to the image of the application to be launched.
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example:    'Set ObjAppImage = MobiDevice("Device").MobiPage("Home").MobiImage("Image_Messages")
+							 ' Set ObjMobiDevice = MobiDevice("Device")
+							'blnResult = LaunchiPhoneApp(ObjMobiDevice,ObjAppImage)
+''--------------------------------------------------------------------------------------------------------------------------
+
+Function LaunchIOSApp(ObjSwipeRegion , ObjAppImage)
+
+	LaunchIOSApp = False
+	'Close any open application
+	ObjSwipeRegion.ButtonPress eHOME 
+	wait 1
+	'Scroll to extreme left
+	ObjSwipeRegion.Scroll eLEFT
+	wait 1
+	'Calling function to search the image 
+	BolGotImage = SearchImage (ObjAppImage, "right",ObjSwipeRegion)
+	
+	If BolGotImage Then
+		LaunchIOSApp = True
+		ObjAppImage.Click
+	End If
+
+End Function
+
+
+
+
+'##########################################################################################################################
+''@Function:           KillIOSApp
+''@Description:    Kills the app corresponding to the Image object passed 
+''@Return Type:	 Boolean
+''@Created By:    Manisha
+''@Created On:   07/24/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Pm Type:           Object
+''@Param Name:  ObjRunningAppsMenu 
+''@Para: 		            In
+''@Param Desc: 	The element object corresponding to the region displaying running apps
+''--------------------------------------------------------------------------------------------------------------------------
+''@Pm Type:            Object
+''@Param  Name:  ObjAppImage 
+''@Para: 		            In
+''@Param Desc: 	The Image object corresponding to the app image
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: blnResult = KillIOSApp( ObjRunningAppsMenu , ObjAppImage)
+''--------------------------------------------------------------------------------------------------------------------------
+
+Function KillIOSApp(ObjRunningAppsMenu , ObjAppImage)
+
+	KillIOSApp = False
+	'Close the running app
+	Window("regexpwndclass:=WindowsForms10.Window.8.app.0.24f4a7c").Click 100,100,micRightBtn
+	wait 2
+	
+	'Bring up the running apps menu
+	Window("regexpwndclass:=WindowsForms10.Window.8.app.0.24f4a7c").DblClick 100,100,micRightBtn
+	wait 2
+	
+	'Call function to search for the application image in the running applications menu.
+	BolGotImage = SearchImage(ObjAppImage,"right",ObjRunningAppsMenu)
+	
+	If  BolGotImage Then
+	
+		IntTopX = cint(ObjAppImage.getROProperty("x"))
+		IntTopY = cint(ObjAppImage.getROProperty("y"))
+		ObjAppImage.LongClick 3000
+		MobiDevice("Device").Click IntTopX ,IntTopY
+		wait 1
+		KillIOSApp = True 
+		
+	End If
+	
+	'Return to Home screen
+	Window("regexpwndclass:=WindowsForms10.Window.8.app.0.24f4a7c").DblClick 100,100,micRightBtn
+
+End Function
+
+
+'##########################################################################################################################
+''@Sub:        		   SaveLogFile
+''@Description: 	   'This  sub saves the trust log file to the input path specified.
+''@Created By: 		   Manisha 
+''@Created On: 		   06/01/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	   PathForLog 
+''@Param Type:   	   String
+''@Param Drtn: 		   In
+''@Param Desc: 		   The complete path  where trust log file is to be saved.
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: 		   path = "C:\Test\Test.log"
+''					   SaveLogFile path
+''--------------------------------------------------------------------------------------------------------------------------
+
+Sub SaveLogFile(StrPathForLog)
+	Dim StrPathOfTrustLog
+	Set  objFSO = CreateObject("Scripting.FileSystemObject")
+	Const TemporaryFolder =2
+	StrTempPath= objFSO.GetSpecialFolder(TemporaryFolder)
+	StrPathOfTrustLog = StrTempPath & "\Mobile Labs\Trust\Trust.log"
+
+	If objFSO.FileExists(StrPathForLog) Then
+		Set DelLogFile = objFSO.GetFile(StrPathForLog)
+		DelLogFile.Delete
+	End If
+
+	If  objFSO.FileExists(StrPathOfTrustLog)Then
+		objFSO.CopyFile  StrPathOfTrustLog , StrPathForLog
+	End If
+	Set objFSO = Nothing
+End Sub
+
+'##########################################################################################################################
+''@Sub:        			CaptureScreenshot
+''@Description: '	    This  sub saves the screenshot of any viewer  to the path specified with the  name specified in the path
+''@Created By: 		    Manisha 
+''@Created On: 		    06/01/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:         PathForImage 
+''@Param Type:         String
+''@Param Drtn: 		   In
+''@Param Desc:         The complete path  where screenshot is to be saved.
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: 		   path = "C:\Test\Test.png"
+''					   CaptureScreenshot path
+''--------------------------------------------------------------------------------------------------------------------------
+
+Sub CaptureScreenshot (StrPathForImage)
+	Set objDesc = Description.Create
+	Set  objFSO = CreateObject("Scripting.FileSystemObject")
+	objDesc("regexpwndclass").value = "POCKET CONTROLLER.*|WindowsForms10.Window.8.app.0.33c0d9d|" &_
+	"HwndWrapper[MobileLabs.Trust.AiDisplay.exe;;061d120c-5e6f-486f-9ba3-2807c1a440aa]"
+	If  Window(objDesc).Exist(2) = True Then
+		If objFSO.FileExists (StrPathForImage) Then
+			Set DelFileObj = objFSO.GetFile(StrPathForImage)
+			DelFileObj.Delete
+		End If
+		Window(objDesc).Activate
+		If   err.number = -2147220987 Then
+			'If object not visible error pops up , capture the desktop screenshot
+			Desktop.CaptureBitmap StrPathForImage,True
+		Else 
+			Window(objDesc).CaptureBitmap StrPathForImage,True
+		End If
+	Else
+		'if existence of viewer fails , capture the desktop screenshot
+		Desktop.CaptureBitmap StrPathForImage,True
+	End If
+	Set objDesc = Nothing
+	Set objFSO = Nothing
+End Sub
+
+'##########################################################################################################################
+''@Function:		GetTrustInstallDir
+''@Description:	  Returns the installation directory (complete path) for Trust.	
+''@Return Type:	String
+''@Created By: Naveen
+''@Created On: 07/5/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: strPath = GetTrustInstallDir
+''--------------------------------------------------------------------------------------------------------------------------
+Function GetTrustInstallDir()
+	GetTrustInstallDir = GetDirInProgramFiles("Mobile Labs") & "\Trust\"
+End Function
+
+
+'##########################################################################################################################
+''@Function:		GetDirInProgramFiles
+''@Description:	  Returns the path of a folder within the Program Files folder
+''@Return Type:	String
+''@Created By: Naveen
+''@Created On: 01/23/2013
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:         strFolderName 
+''@Param Type:         String
+''@Param Drtn: 		   In
+''@Param Desc:       The name of the folder
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: strPath = GetDirInProgramFiles("Mobile Labs")
+''--------------------------------------------------------------------------------------------------------------------------
+
+Function GetDirInProgramFiles(strFolderName)
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	Set objRoot = objFSO.GetDrive(objFSO.GetDriveName(Environment("SystemTempDir")))
+	For Each objFolder in objRoot.RootFolder.SubFolders
+		If StrComp(objFolder.Name, "Program Files (x86)", 1) = 0 Then
+			For Each objSubFolder in objFolder.SubFolders
+				If StrComp(objSubFolder.Name, strFolderName, 1) = 0 Then
+					GetDirInProgramFiles = objSubFolder.Path
+				End If
+			Next
+		ElseIf StrComp(objFolder.Name, "Program Files", 1) = 0 Then
+			For Each objSubFolder in objFolder.SubFolders
+				If StrComp(objSubFolder.Name, strFolderName, 1) = 0 Then
+					GetDirInProgramFiles = objSubFolder.Path
+				End If
+			Next
+		End If
+	Next
+End Function
+
+'##########################################################################################################################
+''@Function:		LaunchTrustOM
+''@Description:	  Launches Trust Object Manager. Returns True if Trust OM launches successfully or is already running, False otherwise
+''@Return Type:	Boolean
+''@Created By: Naveen
+''@Created On: 07/5/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: LaunchTrustOM
+''--------------------------------------------------------------------------------------------------------------------------
+Function LaunchTrustOM()
+	'Exit if Trust Object Manager is already running
+	If Window("regexpwndtitle:=Mobile Labs Trust").Exist(2)  OR _
+		WpfWindow("regexpwndtitle:=Mobile Labs Trust", "devname:=Root").Exist(2) Then
+		LaunchTrustOM = True
+		Exit Function
+	End If
+
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	LaunchTrustOM = False
+	SystemUtil.CloseProcessByName "cmd.exe"
+	SystemUtil.Run "cmd.exe"
+	Window("regexpwndclass:=ConsoleWindowClass").Type objFSO.GetDrive(objFSO.GetDriveName(Environment("SystemTempDir")))
+	Window("regexpwndclass:=ConsoleWindowClass").Type micReturn
+	Window("regexpwndclass:=ConsoleWindowClass").Type "cd " & GetTrustInstallDir
+	Window("regexpwndclass:=ConsoleWindowClass").Type micReturn
+	Window("regexpwndclass:=ConsoleWindowClass").Type "ObjectManager.exe"
+	Window("regexpwndclass:=ConsoleWindowClass").Type micReturn
+	Window("regexpwndclass:=ConsoleWindowClass").Close
+
+	If Window("regexpwndtitle:=Mobile Labs Trust").Exist(2) Then
+		LaunchTrustOM = True
+	ElseIf WpfWindow("regexpwndtitle:=Mobile Labs Trust", "devname:=Root").Exist(2) Then
+		LaunchTrustOM = True
+	End If
+
+	Set objFSO = Nothing
+End Function
+
+'##########################################################################################################################
+''@Sub:        			CreateTestResult
+''@Description: 	Creates an Excel file and enters the Test results into it.
+''@Return Type:	N/A
+''@Created By: Naveen
+''@Created On: 07/06/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name: arrStepName 
+''@Param Type:   Array
+''@Param Drtn:	  In
+''@Param Desc:	An array of all the Step Names in the QTP Test.
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  arrExpectedResult 
+''@Param Type:   Array
+''@Param Drtn: 		In
+''@Param Desc: 	An array of all the Expected Results for each step in the QTP Test.
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  arrActualResult 
+''@Param Type:   Array
+''@Param Drtn: 		In
+''@Param Desc: 	An array of all the Actual Results for each step in the QTP Test.
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  arrDetail 
+''@Param Type:   Array
+''@Param Drtn: 		In
+''@Param Desc: 	An array of failure details for each step in the QTP Test.
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  arrStatus 
+''@Param Type:   Array
+''@Param Drtn: 		In
+''@Param Desc: 	An array of pass/fail status for each step in the QTP Test.
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: CreateTestResult(arrStepName, arrExpectedResult, arrActualResult, arrDetail)
+''--------------------------------------------------------------------------------------------------------------------------
+Sub CreateTestResult(ByVal arrStepName, ByVal arrExpectedResult, ByVal arrActualResult, ByVal arrDetail, ByVal arrStatus)
+
+	'Find the path of MobilLabs Automation Framework folder
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	strCurrentPath = Environment("TestDir")
+	strModule = ""
+		
+	'Loop until "MobileLabs Automation Framework" folder is found
+	blnParentFolderFound = True
+	Do While Replace(Split(strCurrentPath,"\")(UBound(Split(strCurrentPath,"\"))), " ", "") <> "MobileLabsAutomationFramework"
+		strCurrentPath = objFSO.GetParentFolderName(strCurrentPath)
+		'Exit if reaches the system drive
+		If InStr(1, strCurrentPath, "\") = 0 Then
+			blnParentFolderFound = False
+			Exit Do
+		End If
+		If InStr(1, strCurrentPath, "Object Manager", 1) > 0 Then
+			strModule = "Object Manager"
+		End If
+		If InStr(1, strCurrentPath, "Installer Tests", 1) > 0 Then
+			strModule = "Installer Tests"
+		End If
+		If InStr(1, strCurrentPath, "Licensing Tests", 1) > 0 Then
+			strModule = "Licensing Tests"
+		End If
+		If InStr(1, strCurrentPath, "PhoneLookup", 1) > 0 Then
+			strModule = "PhoneLookup"
+		End If    
+	Loop
+		
+	'Define the path of the Root Folder: <MobileLabs Automation Framework>
+	If blnParentFolderFound Then
+		If Right(strCurrentPath,1) <> "\" Then
+			strCurrentPath = strCurrentPath & "\"
+		End If
+	End If
+
+	'Create the Test Result excel sheet within the %MobileLabs Automation Framework\Object Manager\TestResults
+	strTestFilePath = strCurrentPath & strModule & "\TestResults\TestResults.xlsx"
+	Set objExcel = CreateObject("Excel.Application")
+	objExcel.Visible = False
+	objExcel.DisplayAlerts = False
+	blnSheetFound = False
+
+	If objFSO.FileExists(strTestFilePath) Then
+		Set objWorkbook = objExcel.Workbooks.Open(strTestFilePath)
+		For Each objWorksheet in objWorkbook.Worksheets
+			If InStr(1, objWorksheet.Name, Environment("TestName"), 1) > 0  Then
+				objWorkbook.Sheets.Add ,,objWorkbook.Worksheets.Count
+				objWorksheet.Delete
+				blnSheetFound = True
+			End If
+		Next
+	Else
+		Set objWorkbook = objExcel.Workbooks.Add()
+		intSheets = objWorkbook.Worksheets.Count
+
+		'Remove all sheets except the first one
+		Do Until intSheets = 1 
+			objWorkbook.Worksheets(intSheets).Delete
+			intSheets = intSheets - 1
+		Loop
+	End If
+
+	objWorkbook.Sheets.Add ,,objWorkbook.Worksheets.Count
+	For Each objWorksheet in objWorkbook.Worksheets
+		If InStr(1, objWorksheet.Name, "Sheet", 1) > 0 Then
+			objWorksheet.Name = Environment("TestName")
+			Exit For
+		End If
+	Next
+
+	'Remove all irrelevant sheets
+	For Each objWorksheet in objWorkbook.Worksheets
+		If InStr(1, objWorksheet.Name, "Sheet", 1) > 0 Then
+			objWorksheet.Delete
+		End If
+	Next
+	
+	Set objWorksheet = objWorkbook.Worksheets(Environment("TestName"))
+    
+	'Enter Test Results
+	For intRow = 0 To UBound(arrStepName)
+		objExcel.Columns(1).ColumnWidth = 40
+		objWorkbook.ActiveSheet.Range("A" & intRow+1).WrapText = True
+        objWorksheet.Cells(intRow+1,1).Value = arrStepName(intRow)
+	Next
+
+	For intRow = 0 To UBound(arrExpectedResult)
+		objExcel.Columns(2).ColumnWidth = 40
+		objWorkbook.ActiveSheet.Range("B" & intRow+1).WrapText = True
+        objWorksheet.Cells(intRow+1,2).Value = arrExpectedResult(intRow)
+	Next
+
+	For intRow = 0 To UBound(arrActualResult)
+		objExcel.Columns(3).ColumnWidth = 40
+		objWorkbook.ActiveSheet.Range("C" & intRow+1).WrapText = True
+        objWorksheet.Cells(intRow+1,3).Value = arrActualResult(intRow)
+	Next
+
+	For intRow = 0 To UBound(arrDetail)
+		objExcel.Columns(4).ColumnWidth = 40
+		objWorkbook.ActiveSheet.Range("D" & intRow+1).WrapText = True
+        objWorksheet.Cells(intRow+1,4).Value = arrDetail(intRow)
+	Next
+
+	For intRow = 0 To UBound(arrStatus)
+		objExcel.Columns(5).ColumnWidth = 12
+		objWorkbook.ActiveSheet.Range("E" & intRow+1).WrapText = True
+        objWorksheet.Cells(intRow+1,5).Value = arrStatus(intRow)
+		If LCase(arrStatus(intRow)) = "passed" Then
+			For i=1 To objWorksheet.UsedRange.Columns.Count
+				objExcel.Cells(intRow+1, i).Interior.ColorIndex = 4
+			Next
+		ElseIf LCase(arrStatus(intRow)) = "failed" Then
+             For i=1 To objWorksheet.UsedRange.Columns.Count
+				objExcel.Cells(intRow+1, i).Interior.ColorIndex = 3
+			Next
+		End If
+	Next
+
+	'Color the headers
+	For i=1 To objWorksheet.UsedRange.Columns.Count
+		objExcel.Cells(1, i).Interior.ColorIndex = 14
+		objExcel.Cells(1, i).Font.ColorIndex = 2
+	Next
+
+	objWorksheet.Range("A2:A" & objWorksheet.UsedRange.Rows.Count).RowHeight = 350
+
+	For iRow = 1 To objWorksheet.UsedRange.Rows.Count
+		For iColumn = 1 To objWorksheet.UsedRange.Columns.Count
+			objExcel.Cells(iRow, iColumn).Borders.ColorIndex = 49
+		Next
+	Next
+
+	objWorkbook.SaveAs(strTestFilePath)
+	objWorkbook.Close
+	objExcel.Quit
+
+	Set objRange1 = Nothing
+	Set objRange2 = Nothing
+	Set objRange3 = Nothing
+	Set objRange4 = Nothing
+	Set objRange5 = Nothing
+	Set objWorksheet = Nothing
+	Set objWorkbook = Nothing
+	Set objExcel = Nothing
+
+End Sub
+
+'##########################################################################################################################
+''@Sub:        			OCRDesktop
+''@Description: 	Captures the Desktop image, pastes it into Paint and OCRs the image
+''@Return Type:	N/A
+''@Created By: Naveen
+''@Created On: 07/19/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  arrCoords 
+''@Param Type:   Array
+''@Param Drtn: 		In
+''@Param Desc: 	Contains object region coords, LeftX, TopY, RightX and BottomY
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example:  arrCoords = Array(35, 44, 165, 144)
+''@					strText = OCRDesktop(arrCoords)
+''--------------------------------------------------------------------------------------------------------------------------
+
+Function OCRDesktop(arrCoords)
+	Set objWSH = CreateObject("WScript.Shell")
+	Set objWordB = CreateObject("Word.Basic")
+
+	objWordB.SendKeys "{prtsc}"
+	objWordB.AppClose "Microsoft Word"
+
+	SystemUtil.CloseProcessByName "mspaint"
+'	SystemUtil.CloseProcessByName "mspaint.exe"
+'	SystemUtil.CloseProcessByName "mspaint.exe *32"
+	SystemUtil.Run "mspaint.exe"
+
+	Window("regexpwndclass:=MSPaintApp").Maximize
+	Window("regexpwndclass:=MSPaintApp").Click
+	Window("regexpwndclass:=MSPaintApp").Type micCtrlDwn
+	Window("regexpwndclass:=MSPaintApp").Type "v"
+	Window("regexpwndclass:=MSPaintApp").Type micCtrlUp
+
+	OCRDesktop = Window("regexpwndclass:=MSPaintApp").WinObject("regexpwndclass:=Afx:","window id:=0").GetVisibleText(arrCoords(0), arrCoords(1), arrCoords(2), arrCoords(3))
+
+	SystemUtil.CloseProcessByName "mspaint.exe"
+	Set objWordB = Nothing
+	Set objWSH = Nothing
+End Function
+
+'##########################################################################################################################
+''@Function:        SearchImage
+''@Description: Search for the image that user has passed as an input
+''@Return Type:	Boolean
+''@Created By: Saurabh
+''@Created On: 07/20/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  ObjApp 
+''@Param Type:   String
+''@Param Drtn: 		In
+''@Param Desc: 	Objectname
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  Direction 
+''@Param Type:   String
+''@Param Drtn: 		In
+''@Param Desc: 	Direction in which user needs to swipe
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: blnResult = SearchImage(ObjApp,"Left",ObjSwipe)
+''ObjApp = set ObjApp = MobiDevice("Device").MobiPage("Page_1").MobiImage("Image_PlayStore")
+''--------------------------------------------------------------------------------------------------------------------------
+Function SearchImage(ObjApp,Direction,ObjSwipe)
+
+	SearchImage = False
+
+	StartTime = Minute(Now)
+			
+	'Check the Application exist on current open page or not
+
+	If ObjApp.Exist(2) Then
+		SearchImage = True
+		 Exit Function
+	End if
+
+	'Generate a unique file name
+	strFileName = Replace(Replace(Replace(CStr(Now), "/", ""), " ", "_"), ":", "") &"old"& ".png"
+	
+	'Generate the path to save the file. Path should be System's Temp directory
+	strImagePathOld = Environment("SystemTempDir") & "\" & strFileName
+	
+	'Delete any file in Temp that has the same name as strFileName
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	
+	If objFSO.FileExists(strImagePathOld) Then
+		objFSO.DeleteFile strImagePathOld, True
+	End If
+
+	'Take screen shot of current screen
+	Mobidevice("micclass:=MobiDevice").CaptureBitmap strImagePathOld, True
+			
+	wait 2
+	
+	Do While Not( ObjApp.Exist(2))
+
+		'Exit if the looping continues for more than 7minutes
+		If Minute(Now) - StartTime >  7 Then
+			Exit Do
+		End If
+
+		wait 2
+		
+		Select Case ucase (Direction)
+
+			Case "LEFT"
+				ObjSwipe.Swipe eLEFT,eMEDIUM
+			Case "TOP"
+				ObjSwipe.Swipe  eUP,eMEDIUM
+			Case "RIGHT"
+				ObjSwipe.Swipe eRIGHT,eMEDIUM
+			Case "BOTTOM"
+				ObjSwipe.Swipe eDOWN,eMEDIUM
+		End Select
+
+		wait 2
+	
+		'Generate a unique file name
+		strFileName = Replace(Replace(Replace(CStr(Now), "/", ""), " ", "_"), ":", "") &"new"& ".png"
+		
+		'Generate the path to save the file. Path should be System's Temp directory
+		strImagePathNew = Environment("SystemTempDir") & "\" & strFileName
+		
+
+		If objFSO.FileExists(strImagePathNew) Then
+			objFSO.DeleteFile strImagePathNew, True
+		End If
+
+		'Take screen shot  of image after swipe
+			Mobidevice("micclass:=MobiDevice").CaptureBitmap strImagePathNew, True
+
+		Set objFcomapre = CreateObject("Mercury.FileCompare")
+
+		If ObjApp.Exist(2) then
+			SearchImage = True
+			 Exit Do
+		End if
+
+		'Compare the two screenshots
+		If objFcomapre.isequalbin(strOldScreenshot, strNewScreenshot, 0, 1) Then
+			Exit Do
+		End If
+	Loop
+End Function
+
+
+'##########################################################################################################################
+''@Function:        VerifySetPercentage
+''@Description: Verify set percentage method set slider to desired percentage or not
+''@Return Type:	Boolean
+''@Created By: Saurabh
+''@Created On: 07/25/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  ObjApp 
+''@Param Type:   String
+''@Param Drtn: 		In
+''@Param Desc: 	Objectname
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  percentagetobeset 
+''@Param Type:   int
+''@Param Drtn: 		In
+''@Param Desc: Percentage to be set
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: blnResult = VerifySetPercentage(objapp,50)
+''ObjApp = set ObjApp = MobiDevice("Device").MobiPage("Page_1").MobiSlider("Image_PlayStore")
+''--------------------------------------------------------------------------------------------------------------------------
+
+
+Function VerifySetPercentage(objapp,percentagetobeset)
+
+		VerifySetPercentage = False
+	
+		CalcAbsCoords intabs_x,intabs_y
+		
+		IntX = objapp.GetTOProperty("X")
+		intY = objapp.GetTOProperty("Y")
+
+		If percentagetobeset = 0  Then
+			IntWidth = 0
+			IntHeight = 0
+		 Else if percentagetobeset = 50 then
+			IntWidth = (objapp.GetTOProperty("Width")/2)
+			IntHeight = Cint(objapp.GetTOProperty("Height")/2)
+		Else 
+			IntWidth = (objapp.GetTOProperty("Width"))
+			IntHeight = Cint(objapp.GetTOProperty("Height"))
+		End If
+		End if 
+'       	
+		intx = Cint(intabs_x + (IntX+IntWidth))
+		inty =Cint(intabs_y + (intY+IntHeight) )
+          
+		
+		'Calculated current x ,y of mouse
+		Set controlObject = DotNetFactory.CreateInstance("System.Windows.Forms.Control")
+		currentX = Cint(controlObject.MousePosition.X)
+		currentY = Cint(controlObject.MousePosition.Y)
+		
+		
+		If  currentX = intx Then
+			VerifySetPercentage = True
+		End If
+
+End Function
+
+'##########################################################################################################################
+''@Function:        CalcAbsCoords
+''@Description: Calculate absx & absy coords
+''@Created By: Saurabh
+''@Created On: 07/25/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  intabs_x 
+''@Param Type:   String
+''@Param Drtn: 		out
+''@Param Desc: 	Absolute x coordinates
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  intabs_y 
+''@Param Type:   int
+''@Param Drtn: 	out
+''@Param Desc: 		Absolute y coordinates
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: CalcAbsCoords(intabs_x,intabs_y)
+
+''--------------------------------------------------------------------------------------------------------------------------
+
+Function CalcAbsCoords(intabs_x,intabs_y)
+
+	'For Trust AI Display execute this code
+	If Window("regexpwndtitle:=Trust AI Display").Exist(2) Then
+		intabs_x = Window("regexpwndtitle:=Trust AI Display").getroproperty("abs_x")
+		intabs_y = Window("regexpwndtitle:=Trust AI Display").getroproperty("abs_y")
+		Exit Function
+	End If
+
+	'Created description for winobject
+	Set objDesc = Description.Create
+	objDesc("regexpwndclass").value = "WindowsForms10.Window.8.app.0.24f4a7c"
+	set objWinobject = Window("regexpwndclass:=WindowsForms10.Window.8.app.0.24f4a7c").ChildObjects(objDesc)
+		
+	'Calculated abs_x,abs_y coordinates
+	intabs_x = objWinobject(0).getroproperty("abs_x")
+	intabs_y = objWinobject(0).getroproperty("abs_y")	
+
+End Function
+
+
+'##########################################################################################################################
+''@Function:        VerifyGetPercentage
+''@Description: Verify get percentage method return correct percentage of slider
+''@Return Type:	Boolean
+''@Created By: Saurabh
+''@Created On: 07/25/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  ObjApp 
+''@Param Type:   String
+''@Param Drtn: 		In
+''@Param Desc: 	Objectname
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  DeviceType 
+''@Param Type:   string
+''@Param Drtn: 		In
+''@Param Desc: Device type (iphone,android,windowsmobile)
+''--------------------------------------------------------------------------------------------------------------------------
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  GetPer 
+''@Param Type:   int
+''@Param Drtn: 		In
+''@Param Desc:  Percentage returned by slider
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: blnResult = VerifyGetPercentage(objapp,45,"iphone")
+''ObjApp = set ObjApp = MobiDevice("Device").MobiPage("Page_1").MobiSlider("Image_PlayStore")
+''--------------------------------------------------------------------------------------------------------------------------
+
+
+Function VerifyGetPercentage(objapp,GetPer,DeviceType)
+
+		VerifyGetPercentage = False
+	
+		CalcAbsCoords intabs_x,intabs_y
+		
+		IntX = objapp.GetTOProperty("X")
+		intY = objapp.GetTOProperty("Y")
+
+		IntWidth = objapp.GetTOProperty("Width") 
+
+		Currwidth =Cint( (GetPer /100) *IntWidth)
+
+		IntHeight = Cint(objapp.GetTOProperty("Height"))
+
+		CurrHeight = Cint( (GetPer /100) * IntHeight)
+	
+		intxUp = intabs_x + (IntX+Currwidth)
+		intyUp =intabs_y + (intY+CurrHeight) 
+          
+		
+		'Calculated current x ,y of mouse
+		Set controlObject = DotNetFactory.CreateInstance("System.Windows.Forms.Control")
+		currentX = Cint(controlObject.MousePosition.X)
+		currentY = Cint(controlObject.MousePosition.Y)
+
+		'Created description for winobject
+
+		Set objDesc = Description.Create
+		objDesc("regexpwndclass").value = "WindowsForms10.Window.8.app.0.24f4a7c"
+		set abc = Window("regexpwndclass:=WindowsForms10.Window.8.app.0.24f4a7c").ChildObjects(objDesc)
+		
+		'Calculated abs_x,abs_y coordinates
+
+		Select Case Ucase (DeviceType)
+			Case "IPHONE"
+				IntRatio = abc(0).getroproperty("width")/320
+				intall = IntRatio * 20
+		End Select
+        
+		If (currentX - intxUp) <= intall Then
+			VerifyGetPercentage = True
+		End If
+
+End Function
+
+
+
+'##########################################################################################################################
+''@Function:		GetFilePath
+''@Description: 	Gets the complete path of the file (along with the file name) within the MobileLabs Automation Framework folder
+''@Return Type:		String
+''@Created By: 		Naveen
+''@Created On: 		08/16/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	strFileName 
+''@Param Type:   	String
+''@Param Drtn: 		In
+''@Param Desc: 	Name of the file
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example:  strFilePath = GetFilePath("InstallTrust.vbs")
+''--------------------------------------------------------------------------------------------------------------------------
+Function GetFilePath(strFileName)
+	If InStr(1, strFileName, "\") > 0 Then
+		strFileName = Split(strFileName, "\")(UBound(Split(strFileName, "\")))
+	End If
+ 
+	'Get path to TempFolder
+	strTempPath = Environment("SystemTempDir") & "\MobileLabsAutomation"
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	If Not(objFSO.FolderExists(strTempPath)) Then
+		DownloadQCAttachments
+	End If
+    
+	Environment("FileFound") = False
+	CreateFilePath strTempPath, strFileName, strFilePath
+	GetFilePath = strFilePath
+
+	Set objFSO = Nothing
+End Function
+
+'##########################################################################################################################
+''@Function:		CreateFilePath
+''@Description: 	Looks for strFileName within strFolderName and updates the strFilePath with complete filepath.
+''@Return Type:		N/A
+''@Created By: 		Naveen
+''@Created On: 		08/16/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	strFolderName 
+''@Param Type:   	String
+''@Param Drtn: 		In
+''@Param Desc: 	Path of the Parent Folder
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	strFileName 
+''@Param Type:   	String
+''@Param Drtn: 		In
+''@Param Desc: 	Name of the File to be searched within strFolderName
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	strFilePath 
+''@Param Type:   	String
+''@Param Drtn: 		Out
+''@Param Desc: 	Complete path of strFileName if found
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example:  CreateFilePath "C:\Automation Framework\", "Master.vbs", strFilePath
+''@					Print strFilePath
+''--------------------------------------------------------------------------------------------------------------------------
+Function CreateFilePath(ByVal strFolderName, ByVal strFileName, ByRef strFilePath)     
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+
+	Set ObjFolder = objFSO.GetFolder(strFolderName)     
+	Set ObjFiles = ObjFolder.Files
+
+	'Look for file   
+	For Each ObjFile In ObjFiles         
+	   If UCase(ObjFile.Name) = UCase(strFileName) Then
+			strFilePath = ObjFile.Path
+			Environment("FileFound") = True
+			Exit Function
+	   End If
+	Next
+
+	'Getting all subfolders  
+	Set ObjSubFolders = ObjFolder.SubFolders           
+	For Each ObjFolder In ObjSubFolders         
+		'Look in sub-folders     
+		CreateFilePath ObjFolder.Path, strFileName, strFilePath
+	Next   
+End Function
+
+'##########################################################################################################################
+''@Sub:        			InstallTrust
+''@Description: 	Installs Trust using the MobileLabsTrust.msi package
+''@Return Type:		N/A
+''@Created By: 		Naveen
+''@Created On: 		08/16/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example:  InstallTrust
+''--------------------------------------------------------------------------------------------------------------------------
+Sub InstallTrust
+	'Check if Trust is already installed
+	blnFound = True
+	CreateFilePath GetTrustInstallDir, "MobileLabs.Trust.AutomationHost.exe", strFilePath
+	
+	If IsEmpty(strFilePath) OR strFilePath = "" Then
+		blnFound = False
+	End If
+
+	'Proceed only if Trust is not installed
+	If Not(blnFound) Then
+		Set objWSH = CreateObject("WScript.Shell")
+		strMSIPath = chr(34) & GetFilePath("MobileLabsTrust.msi") & chr(34)
+		objWSH.Exec "msiexec /i " & strMSIPath & " /passive /norestart"
+		blnFound = False
+	
+		'Wait until Trust is installed
+		Do While Not(blnFound)
+			Set objWMIService = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2") 
+			
+			'Executing query to get the process name
+			Set colSoftware = objWMIService.ExecQuery("Select * from Win32_Product")
+			
+			For Each objSoftware In colSoftware
+				If Replace(UCase(objSoftware.name), " ", "") = "MOBILELABSTRUST" Then
+					blnFound = True
+					Exit For
+				End If
+			Next
+		Loop
+	
+		Set objWSH = Nothing
+		Set objWMIService = Nothing
+		Set colSoftware = Nothing
+		SystemUtil.CloseProcessByName "msiexec.exe"
+	End If
+End Sub
+
+'##########################################################################################################################
+''@Sub:        			UninstallTrust
+''@Description: 	Uninstalls Trust using the MobileLabsTrust.msi package
+''@Return Type:		N/A
+''@Created By: 		Naveen
+''@Created On: 		08/16/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example:  UninstallTrust
+''--------------------------------------------------------------------------------------------------------------------------
+Sub UninstallTrust
+	Set objWMIService = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2") 
+		
+	'Executing query to get the process name
+	Set colSoftware = objWMIService.ExecQuery("Select * from Win32_Product")
+		
+	For Each objSoftware In colSoftware
+		If Replace(UCase(objSoftware.name), " ", "") = "MOBILELABSTRUST" Then
+			objSoftware.Uninstall
+			Exit For
+		End If
+	Next
+End Sub
+
+'##########################################################################################################################
+''@Function:        			GetPublicDesktopPath
+''@Description: 	Returns the path of the Public Desktop based on the Windows OS
+''@Return Type:		String
+''@Created By: 		Naveen
+''@Created On: 		08/16/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example:  strPath = GetPublicDesktopPath
+''--------------------------------------------------------------------------------------------------------------------------
+Function GetPublicDesktopPath()
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	Set objDrive = objFSO.GetDrive(objFSO.GetDriveName(Environment("SystemTempDir")))
+
+	If InStr(1, Environment("OS"), "XP", 1) > 0 OR InStr(1, Environment("OS"), "2003", 1) > 0 Then
+		GetPublicDesktopPath = objFSO.GetDrive(objFSO.GetDriveName(Environment("SystemTempDir"))) & "\Documents and Settings\All Users\Desktop\"
+	Else
+		GetPublicDesktopPath = objFSO.GetDrive(objFSO.GetDriveName(Environment("SystemTempDir"))) & "\Users\Public\Desktop\"
+	End If
+End Function
+
+
+
+'##########################################################################################################################
+''@Function:	 GetMobiParentsName
+''@Description:	 Return the logical name of MobiDevice and MobiPage for the specified object
+''@Return Type:	 Array (throgh in-out param arrOutput)
+''@Created By:   Manisha
+''@Created On:   08/16/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: 
+'Set objMobi = MobiDevice("").MobiPage("").MobiButton("")
+'GetMobiParentsName objMobi , arrOutput
+'''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:   objMobi 
+''@Param Type:   Object
+''@Param Drtn: 	 In
+''@Param Desc: 	 The Object for which the logical names of mobidevice and mobipage are to be fetched
+'''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:   arrOutput 
+''@Param Type:   array
+''@Param Drtn: 	 In/Out
+''@Param Desc: 	 to be passed empty.After execution will consist  of mobidevice name at  first index and mobipage name at second index
+''--------------------------------------------------------------------------------------------------------------------------
+
+Function GetMobiParentsName( objMobi , arrOutput)
+
+	Dim arrObjectName
+	Dim strObjectName
+	arrObjectName = Split (objMobi.ToString() , " ")
+     strObjectName =  arrObjectName(0)
+	Set objRepository = CreateObject("Mercury.ObjectRepositoryUtil")
+
+	'Loading the associated repository
+	objRepository.Load(GetFilePath(RepositoriesCollection.Item(1)))
+
+	'Getting all objects of class MobiDevice
+	Set CollDeviceObjects =objRepository.GetChildrenByClass("MobiDevice")
+
+	For intDeviceCount =0 to CollDeviceObjects.Count-1
+		'Setting an object referring to a mobidevice object from the collection
+		Set objDevice = CollDeviceObjects.Item(intDeviceCount)
+		'getting all  mobipage objects under the obtained device object
+		Set CollPageObjects = objRepository.GetChildren(objDevice)
+
+		If LCase(Environment("MobiObjectClass")) = "mobidevice" Then
+			If  LCase(objRepository.GetLogicalName(objDevice)) = LCase(strObjectName) Then
+				arrOutput = Array(objRepository.GetLogicalName(objDevice))
+				Exit Function
+			End If
+		End If
+
+		'If Trust AI Display is open then objects will be under MobiDevice and not MobiPage
+		If Window("regexpwndtitle:=Trust AI Display").Exist(2) Then
+			For intMobiObjectCount = 0 to CollPageObjects.Count-1
+				'Setting an object referring to a mobiobject from the collection of mobiobjects
+				Set objMobile = CollPageObjects.Item(intMobiObjectCount)
+				'Checking if the name of the mobiobject obtained matches the input  object name
+
+				If  lcase(objRepository.GetLogicalName(objMobile)) = lcase(strObjectName) then
+					'Creating output array consisting of names of mobidevice object and mobipage object for the input mobiobject name
+					arrOutput = Array(objRepository.GetLogicalName(objDevice))
+					Exit Function
+				End If
+
+			Next
+		End If
+
+		For intPageCount =0 to CollPageObjects.Count-1
+			'Setting an object referring to a mobipage object from the collection of mobipage objects
+			Set objPage =CollPageObjects.Item(intPageCount)
+			'Getting all  mobiobjects under the obtained mobipage object
+			Set CollMobiObjects = objRepository.GetChildren(objPage)
+
+			For intMobiObjectCount = 0 to CollMobiObjects.Count-1
+				'Setting an object referring to a mobiobject from the collection of mobiobjects
+				Set objMobile = CollMobiObjects.Item(intMobiObjectCount)
+				'Checking if the name of the mobiobject obtained matches the input  object name
+
+				If  lcase(objRepository.GetLogicalName(objMobile)) = lcase(strObjectName) then
+					'Creating output array consisting of names of mobidevice object and mobipage object for the input mobiobject name
+					arrOutput = Array(objRepository.GetLogicalName(objDevice),objRepository.GetLogicalName(objPage))
+					Exit Function
+				End If
+
+			Next
+
+		Next
+
+	Next
+
+End Function
+
+
+
+'##########################################################################################################################
+''@Function:	ReadHiddenProperty
+''@Description:	Return the logical name of MobiDevice and MobiPage for the specified object
+''@Return Type:	Array (throgh in-out param arrOutput)
+''@Created By:  Manisha
+''@Created On:  08/17/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: 
+'Dim arrOut
+'arrOut = array ("text","dominantcolor")
+'Set ObjMobi = MobiDevice("Device").MobiPage("NewMessages").MobiButton("Button_Cancel")
+'StrPathXML  = "C:\test.xml"
+'ReadHiddenProperty  StrPathXML,ObjMobi,arrOut
+'''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  strPathXML 
+''@Param Type:  Object
+''@Param Drtn: 	In
+''@Param Desc: 	The path of the XML file
+'''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  objMobi 
+''@Param Type:  Object
+''@Param Drtn: 	In
+''@Param Desc: 	The Object for the properties of which ,hidden attribute value is to be fetched
+'''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  arrProperties 
+''@Param Type:  array
+''@Param Drtn: 	In/Out
+''@Param Desc: 	array consisting of the names of properties for which hidden attribute value is to be fetched.After execution will consist of either:
+'				True,False or invalid , for the respective property name
+'				True if the Hidden attribute value for the specified property name is "1"
+'				False if the Hidden attribute value for the specified property name is "0"
+'				Invalid if the specified property name can not be found in the XML
+''--------------------------------------------------------------------------------------------------------------------------
+
+Function ReadHiddenProperty(strPathXML,objMobi,arrProperties)
+
+	intNumOfProperties = cint(ubound(arrProperties))
+    Dim arrTemp()
+	ReDim arrTemp(intNumOfProperties,2)
+
+	For intCount=0 to intNumOfProperties
+		arrTemp(intCount,0) = arrProperties(intCount)
+	Next
+	ReDim arrProperties(intNumOfProperties,2)
+
+	'Converting the specified one dimensional array of properties to a 2-D array
+	arrProperties = arrTemp
+
+	Set objXMLDoc = CreateObject("Microsoft.XMLDOM") 
+
+	objXMLDoc.async = False 
+	objXMLDoc.load(strPathXML)
+	
+	'getting the mobi object name 
+	arrSplitObjectDesc = Split ( objMobi.ToString() , " ")
+	StrObjectName = arrSplitObjectDesc(0)
+
+	'calling function to get the name of mobidevice and mobipage for the mobiobject
+	GetMobiParentsName objMobi , arrOutput
+
+	'Setting node to the mobipage, if Trust AI Display is open then use MobiDevice as MobiPage
+	If Window("regexpwndtitle:=Trust AI Display").Exist(2) Then
+		Set MobiParentNode = objXMLDoc.selectSingleNode("qtpRep:ObjectRepository/qtpRep:Objects/qtpRep:Object[@Name =" & "'" &  arrOutput(0) &"'"&"]")
+	Else
+    	Set MobiParentNode = objXMLDoc.selectSingleNode("qtpRep:ObjectRepository/qtpRep:Objects/qtpRep:Object/qtpRep:ChildObjects/qtpRep:Object[@Name =" & "'" &  arrOutput(1) &"'"&"]")
+	End If
+	
+	'Check if the passed in object is MobiDevice ot not and set the XML node accordingly
+	If LCase(Environment("MobiObjectClass")) = "mobidevice" Then	
+		Set MobiObjectNode = MobiParentNode
+	Else
+		Set MobiObjectNode = MobiParentNode.selectSingleNode("qtpRep:ChildObjects/qtpRep:Object[@Name = " & "'" & StrObjectName  &"'"&" ]")
+	End If
+
+	Set MobiPropNode = MobiObjectNode.selectSingleNode("qtpRep:BasicIdentification")
+	For Each Node in MobiPropNode.ChildNodes
+		For intPropertiesCount =0 to ubound(arrProperties,1)
+			If arrProperties(intPropertiesCount,0) = Node.Text Then
+				arrProperties(intPropertiesCount,1) = True
+				Exit For
+			End If
+		Next
+	Next
+
+	For intCount = 0 to ubound(arrProperties,1)
+		If arrProperties(intCount,1) <> True Then
+			arrProperties(intCount,1) = False
+		End If
+	Next
+End Function
+
+'##########################################################################################################################
+''@Function:        			GetAllProgramsFolderPath
+''@Description: 	Returns the path of the All Programs folder based on the Windows OS
+''@Return Type:		String
+''@Created By: 		Saurabh
+''@Created On: 		08/21/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example:  strPath = GetAllProgramsFolderPath
+''--------------------------------------------------------------------------------------------------------------------------
+
+Function GetAllProgramsFolderPath()
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+   	If InStr(1, Environment("OS"), "XP", 1) > 0 OR InStr(1, Environment("OS"), "2003", 1) > 0 Then
+		GetAllProgramsFolderPath = objFSO.GetDrive(objFSO.GetDriveName(Environment("SystemTempDir"))) & "\Documents and Settings\All Users\Start Menu\Programs\"
+	Else
+		GetAllProgramsFolderPath = objFSO.GetDrive(objFSO.GetDriveName(Environment("SystemTempDir"))) & "\ProgramData\Microsoft\Windows\Start Menu\Programs\"
+	End If
+End Function
+
+
+
+'##########################################################################################################################
+''@Function:		CompareBMPfiles
+''@Description:		Compare two Bitmap files and returns True if both are same
+''@Return Type:		Boolean
+''@Created By:		Sushant
+''@Created On:		7-Aug-2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example : CompareBMPfiles(strBeforeDblClickBMPFile, strAfterDblClickBMPFile)
+''--------------------------------------------------------------------------------------------------------------------------
+
+Function CompareBMPfiles( byval strBeforeDblClickBMPFile , byval strAfterDblClickBMPFile)
+	Set objMercuryFilecompare = CreateObject("Mercury.FileCompare")
+	If objMercuryFilecompare.IsEqualBin( strBeforeDblClickBMPFile, strAfterDblClickBMPFile, 0,1) Then
+		CompareBMPfiles = 1
+	Else
+		CompareBMPfiles = 0
+	End If
+	Set objMercuryFilecompare = nothing
+End Function
+
+
+
+'##########################################################################################################################
+''@Function:        fnRandomNumberWithinRange
+''@Description: 	Generate random between given range
+''@Created By: 		Saurabh Ahuja
+''@Created On: 		08/27/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	iMin 
+''@Param Type:   	int
+''@Param Drtn: 		In
+''@Param Desc: 		Minimium value of the range
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name: 		iMax
+''@Param Name: 		iMax
+''@Param Drtn: 		In
+''@Param Desc: 		Maximum value of the range
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: 		StrMobiPlatform = fnRandomNumberWithinRange(50, 100)
+''--------------------------------------------------------------------------------------------------------------------------
+
+Function fnRandomNumberWithinRange(iMin, iMax)
+
+	'Create Random Number within the Range
+	Randomize
+	fnRandomNumberWithinRange = Int(((iMax - iMin) * Rnd) + iMin)
+
+End Function
+			
+'##########################################################################################################################
+''@Function:        GetSystemDrivePath
+''@Description: 	Adjusts a path so that it points to a valid directory in the system drive
+''@Created By: 		Naveen Chauhan
+''@Created On: 		08/31/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	strPath 
+''@Param Type:   	String
+''@Param Drtn: 		In
+''@Param Desc: 	 Path that needs to be adjusted
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: 		GetSystemDrivePath("E:\Users\All Users\Microsoft")
+''@ If the system drive on the current system is C: then the output will be
+''@						"C:\Users\All Users\Microsoft")
+''--------------------------------------------------------------------------------------------------------------------------
+
+Function GetSystemDrivePath(strPath)
+	intLocation = InStr(1, strPath, ":")
+ 	strDrive = Left(Environment("SystemTempDir"), 1)
+	GetSystemDrivePath = strDrive & Right(strPath, Len(strPath) - 1)
+End Function
+
+
+'##########################################################################################################################
+''@Function:		LaunchTrustAIDisplay
+''@Description:	  Launches Trust AI Display Returns True if launches successfully or is already running, False otherwise
+''@Return Type:	Boolean
+''@Created By: Naveen
+''@Created On: 10/15/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name: strAppName 
+''@Param Type:   String
+''@Param Drtn:	  In
+''@Param Desc:	Name of the Trust Agent/App running on the device
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name: strConnectionMethod 
+''@Param Type:   String
+''@Param Drtn:	  In
+''@Param Desc:	Can be "WiFi" or "USB"
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name: strDeviceIP 
+''@Param Type:   String
+''@Param Drtn:	  In
+''@Param Desc:	IP of the device if the connection has to be made over Wi-Fi
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name: strRotation 
+''@Param Type:   String
+''@Param Drtn:	  In
+''@Param Desc:	"Portrait" or "Landscape"
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name: intScale 
+''@Param Type:   Integer
+''@Param Drtn:	  In
+''@Param Desc:	Valid values are from 50 to 200
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: LaunchTrustAIDisplay("PhoneLookup", "USB", "", "Portrait")
+''--------------------------------------------------------------------------------------------------------------------------
+Function LaunchTrustAIDisplay(ByVal strAppName, ByVal strConnectionMethod, ByVal strDeviceIP, ByVal strRotation, ByVal intScale)
+	LaunchTrustAIDisplay = False
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+
+	'If Trust AI Display is already running then close it
+	Set objDesc = Description.Create
+	objDesc("micclass").Value = "Window"
+	objDesc("regexpwndtitle").Value = "Trust AI Display"
+	Set objTrustAI = Desktop.ChildObjects(objDesc)
+
+	For i=0 to objTrustAI.Count - 1
+		objTrustAI(i).Close
+	Next
+
+	'Close all command line consoles
+	Set objCmdDesc = Description.Create
+	objDesc("micclass").Value = "Window"
+    objCmdDesc("regexpwndclass").Value = "ConsoleWindowClass"
+
+	Set objCmd = Desktop.ChildObjects(objCmdDesc)
+
+	For i=0 to objCmd.Count - 1
+		objCmd(i).Close
+	Next
+
+	'Get the path of the Trust AI Display executable and launch it
+	SystemUtil.Run "cmd.exe"
+	Window("regexpwndclass:=ConsoleWindowClass").Type objFSO.GetDrive(objFSO.GetDriveName(Environment("SystemTempDir")))
+	Window("regexpwndclass:=ConsoleWindowClass").Type micReturn
+	Window("regexpwndclass:=ConsoleWindowClass").Type "cd " & GetTrustInstallDir
+	Window("regexpwndclass:=ConsoleWindowClass").Type micReturn
+	Window("regexpwndclass:=ConsoleWindowClass").Type "MobileLabs.deviceViewer.exe"
+	Window("regexpwndclass:=ConsoleWindowClass").Type micReturn
+	Window("regexpwndclass:=ConsoleWindowClass").Close
+
+	If Replace(LCase(strConnectionMethod), " ", "") = "usb" Then
+		'Launch the correct iPhoneUSBConnect cmd file
+		For Each objFile in objFSO.GetDrive(objFSO.GetDriveName(Environment("SystemTempDir"))).RootFolder.Files
+			If objFile.Type = "Windows Command Script" Then
+				Set objTextFile = objFSO.OpenTextFile(objFile.Path, 1, True)
+	
+				strFileText = ""
+				Do While Not objTextFile.AtEndOfStream
+					strFileText = strFileText & objTextFile.ReadLine()
+				Loop
+				If InStr(1, strFileText, "10151") > 0 Then
+					SystemUtil.Run objFile.Path
+					objTextFile.Close
+					Set objTextFile = Nothing
+					Window("regexpwndclass:=ConsoleWindowClass").Minimize
+					Exit For
+				End If
+				objTextFile.Close
+				Set objTextFile = Nothing
+			End If
+		Next
+	End If
+	
+	If LCase(strConnectionMethod) = "wifi" Then
+		Window("regexpwndtitle:=Trust AI Display","width:=340").Type strDeviceIP
+		Window("regexpwndtitle:=Trust AI Display","width:=340").Type micTab
+	Else
+		Window("regexpwndtitle:=Trust AI Display","width:=340").Type micShiftDwn
+		Window("regexpwndtitle:=Trust AI Display","width:=340").Type micTab
+		Window("regexpwndtitle:=Trust AI Display","width:=340").Type micShiftUp
+		Window("regexpwndtitle:=Trust AI Display","width:=340").Type micDwn
+	End If
+
+	If LCase(strRotation) = "landscape" Then
+		Window("regexpwndtitle:=Trust AI Display","width:=340").Type micDwn
+	End If
+
+	'Set scale
+	Window("regexpwndtitle:=Trust AI Display","width:=340").Type micTab
+	Window("regexpwndtitle:=Trust AI Display","width:=340").Type intScale
+	Window("regexpwndtitle:=Trust AI Display","width:=340").Type micReturn
+
+	If Dialog("regexpwndtitle:=Cannot connect").WinButton("regexpwndtitle:=&Yes").Exist(15) Then
+        Dialog("regexpwndtitle:=Cannot connect").WinButton("regexpwndtitle:=&Yes").Click
+	End If
+
+	If MobiDevice("name:=" & strAppName).Exist(5) Then
+		LaunchTrustAIDisplay = True
+	End If
+
+	Set objFSO = Nothing
+End Function
+
+'##########################################################################################################################
+''@Function:        ExtractWinRarFile
+''@Description: 	Extracts a winrar package in the defined directory
+''@Created By: 		Naveen Chauhan
+''@Created On: 		01/23/2013
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	strFilePath 
+''@Param Type:   	String
+''@Param Drtn: 		In
+''@Param Desc: 	 Path of the winrar file
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	strDestinationDir 
+''@Param Type:   	String
+''@Param Drtn: 		In
+''@Param Desc: 	 Directory where the package contents need to be extracted
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	intTimeOut 
+''@Param Type:   	Integer
+''@Param Drtn: 		In
+''@Param Desc: 	 Timeout in seconds, required to close the command line after extraction is done
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: 		ExtractWinRarFile("C:\Mobile Labs\Trust\Builds\build-000463.rar", "C:\Mobile Labs\Trust\Builds\")
+''--------------------------------------------------------------------------------------------------------------------------
+
+Function ExtractWinRarFile(strFilePath, strDestinationDir, intTimeOut)
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	ExtractWinRarFile = False
+	SystemUtil.CloseProcessByName "cmd.exe"
+	Wait(2)
+	SystemUtil.Run "cmd.exe"
+	Wait(2)
+	Window("regexpwndclass:=ConsoleWindowClass").Type objFSO.GetDrive(objFSO.GetDriveName(Environment("SystemTempDir")))
+	Window("regexpwndclass:=ConsoleWindowClass").Type micReturn
+	Window("regexpwndclass:=ConsoleWindowClass").Type "cd\"
+	Window("regexpwndclass:=ConsoleWindowClass").Type micReturn
+    Window("regexpwndclass:=ConsoleWindowClass").Type "set path=" & GetDirInProgramFiles("WinRar") & ";%path%"
+	Window("regexpwndclass:=ConsoleWindowClass").Type micReturn
+	Window("regexpwndclass:=ConsoleWindowClass").Type "cd " & strDestinationDir
+	Window("regexpwndclass:=ConsoleWindowClass").Type micReturn
+	Window("regexpwndclass:=ConsoleWindowClass").Type "unrar x " & "" & Chr(34) & strFilePath & Chr(34) & ""
+	Window("regexpwndclass:=ConsoleWindowClass").Type micReturn
+
+	'Wait for the extraction to complete
+	Wait(intTimeOut)
+		
+	Window("regexpwndclass:=ConsoleWindowClass").Close
+
+	Set objFSO = Nothing
+End Function
+
+'##########################################################################################################################
+''@Function:		DownloadQCAttachments
+''@Description::	Download all files in QC > Subject//Trust/Framework/Files to SystemTempDir/MobileLabsAutomation
+''@Return Type:		N/A
+''@Created By: 		Naveen
+''@Created On: 		02/08/2013
+''Modified By :     Shweta (added code to download libraries, OR and .exe file)
+''Modified On : 	20/08/2013
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example:  DownloadQCAttachments
+''--------------------------------------------------------------------------------------------------------------------------
+Function DownloadQCAttachments
+	strTempPath = Environment("SystemTempDir") & "\MobileLabsAutomation"
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	If objFSO.FolderExists(strTempPath) Then
+		objFSO.DeleteFolder strTempPath
+		Wait(2)
+	End If
+	objFSO.CreateFolder strTempPath
+	
+	strToolsPath = GetRootFolderPath & "Tools"
+	
+	Set objToolsFolder = objFSO.GetFolder(strToolsPath)
+	
+	For Each objFile In objToolsFolder.Files 
+		If objFile.Attributes = ReadOnly Then 
+			objFile.Attributes = Normal 
+		End If 
+		objFile.Copy strTempPath, True 
+	Next 
+
+'	strQCDir = "Subject\Trust\Framework\Files"
+'	
+'	Set objFolder = QCUtil.QCConnection.TreeManager.NodeByPath(strQCDir) 
+'	Set objAttachmentList = objFolder.Attachments.NewList("") 
+'	
+'	For Each objAttachment In objAttachmentList 
+'		Set objExtStorage = objAttachment.AttachmentStorage 
+'		objAttachmentName = objAttachment.DirectLink
+'		objExtStorage.Load objAttachmentName, true 
+'		objFSO.MoveFile objExtStorage.ClientPath & "\" & objAttachmentName, strTempPath & "\" & Split(objAttachment.Name, "_")(UBound(Split(objAttachment.Name, "_")))
+'	Next 
+'
+'    'Download Object repositories
+'	Set objFilter =  QCUtil.QCConnection.QCResourceFactory.Filter
+'		objFilter.Filter("RSC_FILE_NAME") = "*.tsr" 
+'
+'	Set ORList   = objFilter.NewList
+'
+'	For each objRes in ORList
+'		Set objFile = objRes
+'		objFile.DownloadResource  strTempPath , True
+'	Next
+'
+'	'Download Utility
+'    Set objResourceFactory = QCUtil.QCConnection.QCResourceFactory
+'	Set objRoot = objResourceFactory.NewList("")
+'
+'	For ItemCtr = 1 To objRoot.Count
+'		If Instr(1 , LCase(objRoot.Item(ItemCtr).Name) , "capture screenshots") > 0 Then
+'			Set objSub = objRoot.Item(ItemCtr)
+'			objSub.DownloadResource strTempPath, True
+'			Exit For
+'		End If
+'	Next
+End Function
+
+'##########################################################################################################################
+''@Function:        UninstallSoftware
+''@Description: 	Uninstalls all software programs passed in arrAppToUninstall
+''@Created By: 		Naveen Chauhan
+''@Created On: 		02/11/2013
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	arrAppToUninstall 
+''@Param Type:   	Array
+''@Param Drtn: 		In
+''@Param Desc: 	 An array of programs that need to be uninstalled
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: 	arrAppToUninstall = Array("Mobile Labs Trust")
+''						UninstallSoftware(arrAppToUninstall)
+''--------------------------------------------------------------------------------------------------------------------------
+Sub UninstallSoftware(arrAppToUninstall)
+	Set objWMIService = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2") 
+			
+	'Fire the query to retrieve the software
+	For i = 0 To UBound(arrAppToUninstall)
+		Set colSoftware = objWMIService.ExecQuery("Select * from Win32_Product where Name = '" & arrAppToUninstall(i) & "'")
+		For Each objSoftware In colSoftware
+			If  UCase(arrAppToUninstall(i)) = UCase(objSoftware.name) Then
+				objSoftware.Uninstall()
+				Exit For
+			End If
+		Next
+		Set colSoftware = Nothing
+	Next
+End Sub
+
+'##########################################################################################################################
+''@Function:        KillProcess
+''@Description: 	Kills all processes passed in arrProcessesToKill
+''@Created By: 		Naveen Chauhan
+''@Created On: 		02/11/2013
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	arrProcessesToKill 
+''@Param Type:   	Array
+''@Param Drtn: 		In
+''@Param Desc: 	 An array of processes that need to be killed
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: 	arrProcessesToKill = Array("cmd.exe","python.exe","excel.exe")
+''						KillProcess(arrProcessesToKill)
+''--------------------------------------------------------------------------------------------------------------------------
+Sub KillProcess(arrProcessesToKill)
+	'Returning a reference to an window automation object
+	Set objWMIService = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2") 
+
+	'Executing query to get the process name
+	Set colProcess = objWMIService.ExecQuery("Select * from Win32_Process")
+
+	'Search for a process name and kill the process
+	i = 0
+	For Each objProcess in colProcess
+		If objProcess.Name = arrProcessesToKill(i) Then
+			objProcess.Terminate
+			i = i + 1
+		End If
+	Next
+
+End Sub
+
+
+'##########################################################################################################################
+''@Function:        CaptureScreenshots
+''@Description: 	Calls CaptureScreenshot.exe which captures 9 screenshots of the passed-in object
+''@Created By: 		Naveen Chauhan
+''@Created On: 		07/08/2013
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	objTestObject 
+''@Param Type:   	Object
+''@Param Drtn: 		In
+''@Param Desc: 	 	Object for which the screenshots need to be captured
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: 	Set objTestObject = MobiDevice("Phone Lookup").MobiElement("Element").MobiEdit("demo")
+
+''				CaptureScreenshots objTestObject
+''--------------------------------------------------------------------------------------------------------------------------
+
+Function CaptureScreenshots(ByVal objTestObject)
+	Set objImage = WpfWindow("regexpwndtitle:=Trust Ai Display","wpftypename:=window").WpfImage("devname:=MainImage")
+	CaptureScreenshots = False
+	X = objTestObject.GetROProperty("x")
+	Y = objTestObject.GetROProperty("y")
+	Width = CStr(objTestObject.GetROProperty("width")) & " "
+	Height = CStr(objTestObject.GetROProperty("height"))
+	
+	X = CStr(X + objImage.GetROProperty("x")) & " "
+	Y = CStr(Y + objImage.GetROProperty("y")) & " "
+	
+	If  Err.Number  =  0   AND VarType(X) <> 0  AND VarType(Y) <> 0  AND VarType(Width) <> 0  AND VarType(Height) <> 0   Then
+			SystemUtil.Run GetFilePath("CaptureScreenshot.exe"), " " & X & Y & Width & Height  	   
+			CaptureScreenshots = True
+	End If
+End Function
+
+
+
+
+
+'##########################################################################################################################
+''@Function:        GetRootFolderPath
+''@Description: 	Get the root folder path for MobileLabsAutomationFramework folder
+''@Created By: 		Naveen Chauhan
+''@Created On: 		10-Sept-2015
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: 	strTestSetPath = GetRootFolderPath & "Environment\TestLab.xlsx"
+''--------------------------------------------------------------------------------------------------------------------------
+
+Function GetRootFolderPath
+	'Get current directory
+	strCurrentPath = Environment("TestDir")
+
+	'Loop until "MobileLabsAutomationFramework" folder is found
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	blnRootFolderFound = True
+	strRootPath = strCurrentPath
+	Do While Replace(Split(strRootPath,"\")(UBound(Split(strRootPath,"\"))), " ", "") <> "MobileLabsAutomationFramework"
+		strRootPath = objFSO.GetParentFolderName(strRootPath)
+		'Exit if reaches the system drive
+		If InStr(1, strRootPath, "\") = 0 Then
+			blnRootFolderFound = False
+			Exit Do
+		End If
+	Loop
+
+	'Define the path of the Root Folder: <MobileLabs Automation Framework>
+	If blnRootFolderFound Then
+		If Right(strRootPath,1) <> "\" Then
+			strRootPath = strRootPath & "\"
+		End If
+	Else
+		MsgBox "Could not find the root folder MobileLabsAutomationFramework. Please check that you are executing the test from correct location."
+		ExitTest
+	End If
+	
+	GetRootFolderPath = strRootPath
+	
+	Set objFSO = Nothing
+End Function
+
+
+'##########################################################################################################################
+''@Sub:				CopyToolsToTemp
+''@Description::	Copy all files from %\MobileLabsAutomation\Tools and it's subfolders to SystemTempDir/MobileLabsAutomation
+''@Return Type:		N/A
+''@Created By: 		Naveen
+''@Created On: 		10-Sept-2015
+''Modified By :     
+''Modified On : 	
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example:  CopyToolsToTemp
+''--------------------------------------------------------------------------------------------------------------------------
+
+Sub CopyToolsToTemp
+	strTempPath = Environment("SystemTempDir") & "\MobileLabsAutomation"
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	If objFSO.FolderExists(strTempPath) Then
+		objFSO.DeleteFolder strTempPath
+		Wait(2)
+		
+'		'Refresh explorer
+		RefreshExplorer
+		Wait(4)
+	End If
+	objFSO.CreateFolder strTempPath
+	
+	strToolsPath = GetRootFolderPath & "Tools"
+	
+	'Copy all files in %\MobileLabsAutomation\Tools
+	For Each File In objFSO.GetFolder(strToolsPath).Files 
+		 objFSO.GetFile(File).Copy strTempPath & "\" & objFSO.GetFileName(File),True 
+		 Print "Copying : " & Chr(34) & objFSO.GetFile(File) & Chr(34) & " to " & strTempPath 
+	Next
+	
+	'Copy all files in all subfolders of %\MobileLabsAutomation\Tools
+	Set objToolsSubFolder = objFSO.GetFolder(strToolsPath).SubFolders
+	For Each SubFolder In objToolsSubFolder
+		For Each File1 In objFSO.GetFolder(SubFolder).Files 
+			 objFSO.GetFile(File1).Copy strTempPath & "\" & objFSO.GetFileName(File1),True 
+			 Print "Copying : " & Chr(34) & objFSO.GetFile(File1) & Chr(34) & " to " & strTempPath
+		Next
+	Next
+	
+'	'Copy CLI zip from deviceConnect server to local temp directory
+	'strCopyCli = "-pw GoMobile! deviceconnect@" & Environment("dcip") & ":/usr/local/deviceconnect/Web/Content/Cli/dc-win-x86.zip " & strTempPath
+	strStartPscp = """" & GetFilePath("pscp.exe") & """" & " -pw GoMobile! deviceconnect@" & Environment("dcip") & ":/usr/local/deviceconnect/Web/Content/Cli/dc-win-x86.zip " & strTempPath
+	Wait 1
+	'SystemUtil.Run GetFilePath("pscp.exe"), strCopyCli
+	
+	SystemUtil.CloseProcessByName "cmd.exe"
+	SystemUtil.Run "cmd.exe"
+	Wait 1
+	Window("regexpwndclass:=ConsoleWindowClass").Activate
+	Wait 1
+	Window("regexpwndclass:=ConsoleWindowClass").Type strStartPscp
+	Wait 1
+	Window("regexpwndclass:=ConsoleWindowClass").Type micReturn
+	
+	If Dialog("text:=Open File - Security Warning").Exist(3) Then
+		Dialog("text:=Open File - Security Warning").WinButton("text:=&Run").Click
+		Dialog("text:=Open File - Security Warning").WinButton("text:=&Run").Click
+	End If
+	
+	WaitForProcess "pscp.exe"
+	SystemUtil.CloseProcessByName "cmd.exe"
+	
+	'Unzip CLI
+	ExtractZip strTempPath & "\dc-win-x86.zip", strTempPath
+	Wait 15
+
+End Sub
+
+'##########################################################################################################################
+''@Sub:				ExtractZip
+''@Description::	Unzip a file via Windows extractor
+''@Return Type:		N/A
+''@Created By: 		Naveen
+''@Created On: 		23-Aug-2018
+''Modified By :     
+''Modified On : 	
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	strFileName 
+''@Param Type:   	String
+''@Param Drtn: 		In
+''@Param Desc: 	 	Complete path of the zip file
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	strDestination 
+''@Param Type:   	String
+''@Param Drtn: 		In
+''@Param Desc: 	 	Directory to extarct the zip
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: 	strFileName = "C:\Users\Naveen\AppData\Local\Temp\MobileLabsAutomation\dc-win-x86.zip"
+''				strDestination = "C:\Users\Naveen\AppData\Local\Temp\MobileLabsAutomation\"
+''				ExtractZip strFileName, strDestination
+''--------------------------------------------------------------------------------------------------------------------------
+Sub ExtractZip(ByVal strFileName, ByVal strDestination)
+	'If the extraction location does not exist create it.
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	If NOT objFSO.FolderExists(strDestination) Then
+	   objFSO.CreateFolder(strDestination)
+	End If
+	
+	'Extract the contents of the zip file.
+	Set objShell = CreateObject("Shell.Application")
+	Set FilesInZip = objShell.NameSpace(strFileName).items
+	Print objShell.NameSpace(strDestination).CopyHere(FilesInZip,16)
+	Set objFSO = Nothing
+	Set objShell = Nothing
+End Sub
+
+
+'##########################################################################################################################
+''@Sub:				WaitForProcess
+''@Description::	Waits for the passed in process to exit. Waits for a maximum of 150 seconds
+''@Return Type:		N/A
+''@Created By: 		Naveen
+''@Created On: 		23-Aug-2018
+''Modified By :     
+''Modified On : 	
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	strProcessName 
+''@Param Type:   	String
+''@Param Drtn: 		In
+''@Param Desc: 	 	Complete process name
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: 	WaitForProcess "pscp.exe"
+''--------------------------------------------------------------------------------------------------------------------------
+
+Sub WaitForProcess(strProcessName)
+	'Wait for the process to complete
+	Set objWMI = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")
+	
+	Set colItems = objWMI.ExecQuery("Select * From Win32_Process Where Name = '" & strProcessName & "'")
+	intWait = 0
+
+	Do While colItems.Count > 0
+		Set colItems = Nothing
+		Set colItems = objWMI.ExecQuery("Select * From Win32_Process Where Name = '" & strProcessName & "'")
+		wait 5
+		intWait = intWait + 5
+		If intWait = 150 Then
+			Exit Do
+		End If
+	Loop
+		
+	Set objWMI = Nothing
+	Set colItems = Nothing
+End Sub
+
+'##########################################################################################################################
+''@Sub:				RefreshExplorer
+''@Description::	Restarts Windows Explorer for changes to take effect
+''@Return Type:		N/A
+''@Created By: 		Naveen
+''@Created On: 		03-Sep-2018
+''Modified By :     
+''Modified On : 	
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: 	Call RefreshExplorer
+''--------------------------------------------------------------------------------------------------------------------------
+Sub RefreshExplorer
+	Dim objWMIService, colProcess, objProcess  
+
+	'Get WMI object  
+	Set objWMIService = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")  
+	Set colProcess = objWMIService.ExecQuery("Select * from Win32_Process Where Name = 'explorer.exe'") 
+	For Each objProcess in colProcess 
+		objProcess.Terminate() 
+	Next
+	Wait(3)
+	
+	'Destory objects
+	Set objProcess = Nothing
+	Set colProcess = Nothing
+	Set objWMIService = Nothing
+End Sub 
