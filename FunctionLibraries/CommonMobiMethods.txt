@@ -17,7 +17,7 @@ intWait = 35000
 ''@Param Name:  objTestObject 
 ''@Param Type:   Object
 ''@Param Drtn: 		In
-''@Param Desc: 	Object for which the CaptureBitmap method needs to be tested
+''@Param Desc: 	Object for which the CaptureBitmap method needs to be tested/executed
 ''--------------------------------------------------------------------------------------------------------------------------
 ''@Param Name:  strOption  
 ''@Param Type:   String
