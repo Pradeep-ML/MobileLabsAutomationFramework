@@ -17,7 +17,7 @@
 ''@Param Drtn: 		In
 ''@Param Desc: 		If True then the function would also check the Debug menu options
 ''--------------------------------------------------------------------------------------------------------------------------
-''Example: Set objTestObject = WpfWindow("DesktopViewer")
+''@Example: Set objTestObject = WpfWindow("DesktopViewer")
 ''			blnResult = VerifyDesktopViewerMenuOptions(objTestObject , True)
 ''--------------------------------------------------------------------------------------------------------------------------   
 

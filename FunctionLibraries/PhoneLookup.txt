@@ -20,7 +20,7 @@ Reporter.Filter = rfDisableAll
 ''@Param Drtn: 		In
 ''@Param Desc: 	Function returns TRUE if this object exists
 ''--------------------------------------------------------------------------------------------------------------------------
-''@Example: Set  objTestObject = MobiDevice("PhoneLookup").MobiEdit("Edit")
+''Example: Set  objTestObject = MobiDevice("PhoneLookup").MobiEdit("Edit")
 'flag = LoginAndNavigateToControlsPage(objUISlider, objTestObject )
 'flag = LoginAndNavigateToControlsPage("" , objTestObject)
 '--------------------------------------------------------------------------------------------------------------------------

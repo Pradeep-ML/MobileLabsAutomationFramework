@@ -59,7 +59,7 @@ LaunchdeviceViewer
 '''Created On: 		10-Sept-2015
 '''Last Updated:	17-Jan-2018
 ''--------------------------------------------------------------------------------------------------------------------------
-'''Example: 		ReadEnvironmentVariables
+''Example: 		ReadEnvironmentVariables
 ''--------------------------------------------------------------------------------------------------------------------------
 
 Sub ReadEnvironmentVariables

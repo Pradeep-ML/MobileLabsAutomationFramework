@@ -26,7 +26,7 @@ Reporter.Filter = rfDisableAll
 ''@Param Drtn: 		In
 ''@Param Desc: 	Item value in case of  selection from the Controls list  "" otherwise.
 ''--------------------------------------------------------------------------------------------------------------------------
-''@Example: Set  objTestObject = MobiDevice("PhoneLookup").MobiEdit("Edit")
+''Example: Set  objTestObject = MobiDevice("PhoneLookup").MobiEdit("Edit")
 'flag = NavigateScreenOnPhoneLookup("homepage" , objTestObject , "" )
 'flag = NavigateScreenOnPhoneLookup"Controls" , objTestObject  , "Spinner")
 '--------------------------------------------------------------------------------------------------------------------------

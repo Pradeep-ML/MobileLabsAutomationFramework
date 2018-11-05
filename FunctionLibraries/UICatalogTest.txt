@@ -1,0 +1,186 @@
+'##########################################################################################################################
+''Function:        NavigateToObjectScreenUICatalog
+''Description: 	Navigate to the passed screen in PhoneLookup
+''Created By: 		
+''Created On: 		
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example:   	
+''--------------------------------------------------------------------------------------------------------------------------
+
+Function NavigateToObjectScreenUICatalog(objTestObject , intMode , strCase , strItemToSelect)
+
+     On Error Resume Next
+	 Reporter.Filter = rfEnableAll
+	 Environment("MobiObjectClass") = objTestObject.GetTOProperty("micclass")
+
+	NavigateToObjectScreenUICatalog = False
+	'msgbox MobiDevice("name:=UICatalog").MobiList("nativeclass:=Table").MobiElement("text:=PickerViewPickerViewController").Exist(5)
+    Do Until MobiDevice("name:=UICatalog").MobiList("nativeclass:=Table").MobiElement("text:=PickerViewPickerViewController").Exist(5)
+    	MobiDevice("name:=UICatalog").MobiButton("text:=Back").Click 
+    Loop 
+	
+	Wait 2
+
+	MobiDevice("name:=UICatalog").MobiList("nativeclass:=Table").Select strItemToSelect
+
+'	intX =   MobiDevice("name:=UICatalog").MobiSegment("itemscount:=3").GetROProperty ("width")
+'	intY =  MobiDevice("name:=UICatalog").MobiSegment("itemscount:=3").GetROProperty ("height")
+
+Select Case LCase(strCase)
+
+	Case "pickers" 
+	     MobiDevice("name:=UICatalog").MobiSegment("itemscount:=3" , "visible:=True").Click CInt(intX / 4) , CInt(intY / 2)
+		 objTestObject.WaitProperty "visible" , True , 5000
+
+	Case "datepicker"
+		MobiDevice("name:=UICatalog").MobiSegment("itemscount:=3" , "visible:=True").Click CInt(intX / 2) , CInt(intY / 2)
+		 MobiDevice("name:=UICatalog").MobiSegment("itemscount:=4", "visible:=True").WaitProperty "visible" , True , 3000
+
+		'Runtime X and Y values for Picker Mode
+		intX =  MobiDevice("name:=UICatalog").MobiSegment("itemscount:=4", "visible:=True").GetROProperty("width")
+		intY = MobiDevice("name:=UICatalog").MobiSegment("itemscount:=4", "visible:=True").GetROProperty("height")
+		
+		If  intMode = 1  Then
+			MobiDevice("name:=UICatalog").MobiSegment("itemscount:=4", "visible:=True").Click CInt(intX/5) ,  Cint(intY/2)
+			objTestObject.WaitProperty "visible" , True , 5000
+		ElseIf intMode = 2 Then
+			MobiDevice("name:=UICatalog").MobiSegment("itemscount:=4", "visible:=True").Click CInt(intX / 3) , Cint(intY/2)
+			objTestObject.WaitProperty "visible" , True , 5000
+		ElseIf intMode = 3 Then
+			MobiDevice("name:=UICatalog").MobiSegment("itemscount:=4", "visible:=True").Click CInt(intX / 2)  , Cint(intY/2)
+			objTestObject.WaitProperty "visible" , True , 5000
+		Else
+			MobiDevice("name:=UICatalog").MobiSegment("itemscount:=4", "visible:=True").Click CInt(intX-10) , Cint(intY/2)
+			objTestObject.WaitProperty "visible" , True , 5000
+		End If
+
+End Select
+
+If objTestObject.Exist(10)  Then
+	NavigateToObjectScreenUICatalog = True
+End If
+End Function
+
+
+
+Function VerifyGetItemUICatalog(objTestObject, intIndex, intWheelCount , strExpectedValue , strOption)
+	err.clear
+   On Error Resume Next
+    Reporter.Filter = rfEnableAll
+    Environment("TestStepCount")  = Environment("TestStepCount")  + 1
+	'Reporter.ReportEvent micDone, Environment("StepName") & " starts", ""
+	strObjectType = objTestObject.GetTOProperty("micclass")
+	VerifyGetItem = False
+	strErrorMessage = ""
+
+	Select Case LCase(strOption)
+
+	Case  "withoutparameter"
+		Reporter.Filter = rfDisableAll
+		err.clear
+		strErrorMessage = "Invalid number of parameters"
+	
+		strItem = objTestObject.GetItem
+		Reporter.Filter = rfEnableAll
+
+	 Case "withindexonly"
+			Reporter.Filter = rfDisableAll
+			err.clear
+			objTestObject.GetItem(intIndex)
+			wait 2
+			strItemReturned = objTestObject.GetItem(intIndex)
+			
+
+			'Case : index value is a string
+			If   VarType(intIndex) = 8 Then
+
+						strErrorMessage = "Type mismatch." 
+			'Case : index value is negative
+			ElseIf  intIndex < 0  Then
+				If LCase(strObjectType) = "mobipicker"  Then
+						strErrorMessage = "the requested item exceeds the number of items in the list or is negative."
+				ElseIf LCase(strObjectType) = "mobidropdown" Then
+						strErrorMessage = "Cannot identify the specified item of the object. Confirm that the specified item is included in the object's item collection."
+				ElseIf LCase(strObjectType) = "mobilist" Then
+						strErrorMessage ="Invalid index specified. Must be greater than or equal to zero."
+				Else
+						strErrorMessage ="Invalid index specified. Must be greater or equal to zero"
+				End If
+			'Case : index value is out of range
+			ElseIf  intIndex >= objTestObject.GetROProperty("itemscount") Then
+				If LCase(strObjectType) = "mobipicker"  Then
+						strErrorMessage = "the requested item exceeds the number of items in the list or is negative."
+				ElseIf LCase(strObjectType) = "mobilist" Then
+						strErrorMessage = "Invalid index specified. Must be greater than or equal to zero and less then the final index (" & objTestObject.GetROProperty("itemscount") & ")"
+				Else
+						strErrorMessage ="Cannot identify the specified item of the object. Confirm that the specified item is included in the object's item collection."
+				End If
+
+			Else
+				'Case : Valid index value
+				If  Lcase(Trim(strExpectedValue))= Lcase(Trim(strItemReturned)) Then
+						VerifyGetItem = True
+						Environment("Pass") = "Value returned as"& Space(2) & strItemReturned & Space(2)  & "at index  :"& intIndex 
+				Else
+						Environment("Fail") = "Value returned as"& Space(2) & strItemReturned & Space(2)  & "at index  :"& intIndex &Space(2)&"but expected value was :"& strExpectedValue
+				End If
+			End If 
+			Reporter.Filter = rfEnableAll
+
+	Case "withbothparameters" ,"withonlyoneparameter"
+		err.clear
+			Reporter.Filter = rfDisableAll
+			'objTestObject.GetItem( intIndex , intWheelcount)
+			wait 3
+			strItemReturned = objTestObject.GetItem( intIndex , intWheelcount)
+			wait 3
+			strItemReturned = objTestObject.GetItem( intIndex , intWheelcount)
+			'msgbox strItemReturned
+			'Case : valid index and wheelcount
+			If intIndex < objTestObject.GetROProperty("itemscount") AND intWheelcount < objTestObject.GetROProperty("wheelcount")  Then
+				If  Lcase(Trim(strExpectedValue))= Lcase(Trim(strItemReturned)) Then
+						VerifyGetItem = True
+						Environment("Pass") = "Value returned as"& Space(2) & strItemReturned & Space(2)  & "at index  :"& intIndex &" , "& "Wheelcount  :"& intWheelcount
+				Else
+						Environment("Fail") = "Value returned as"& Space(2) & strItemReturned & Space(2)  & "at index  :"& intIndex &" , "& "Wheelcount  :"& intWheelcount & Space(2)&"but expected value was :"& strExpectedValue
+				End If 
+			'Case : blank index and valid wheelcount
+			Else
+				If intIndex = " " AND  intWheelcount < objTestObject.GetROProperty("wheelcount") Then
+						strErrorMessage = "Type mismatch." 
+
+				'Case : valid index and wheelcount either negative or out of range
+				ElseIf intIndex  < objTestObject.GetROProperty("itemscount")  AND ( intWheelcount < 0 OR intWheelcount > objTestObject.GetROProperty("wheelcount")) Then
+						strErrorMessage = "Invalid picker wheel number assignment"
+				End If 
+			End If 
+	End Select
+
+		If  Len(strErrorMessage) <> 0  Then
+		      				
+		       If Instr(1, LCase(Replace(Err.Description , " " , "")), LCase(Replace(strErrorMessage , " " , "")) ) > 0 Then
+						VerifyGetItem = True
+						Environment("Pass") = "Error message thrown  :"&chr(34) &Err.Description&chr(34)
+				Else
+						Environment("Fail") = "Error message thrown  :"&chr(34) &Err.Description&chr(34) &"but Expected message was :"& strErrorMessage
+				End If
+		End If
+	Reporter.Filter = rfEnableAll	
+
+	If  VerifyGetItem Then
+        ReportStep  "GetItem" ,  Environment("Description"),Environment("ExpectedResult") , Environment("Pass")   , "Pass"
+		Reporter.ReportEvent  micPass  ,  Environment("Description")  ,Environment("Pass")
+	Else
+		ReportStep "GetItem" , Environment("Description"),Environment("ExpectedResult")  , Environment("Fail") , "Fail"
+		Reporter.ReportEvent micFail  ,  Environment("Description")  ,Environment("Fail")
+	End If
+
+	Reporter.ReportEvent micDone, Environment("StepName") & " ends", ""
+	Reporter.Filter = rfDisableAll
+    	If  Environment("TestStepCount")  > Environment("ReportStepCount")  Then
+			strStatus = "Not Run"
+			ReportStep "GetItem" , Environment("Description") , Environment("ExpectedResult") , "Not Executed"  , strStatus
+	End If
+	Err.Clear
+	On Error GoTo 0
+End Function

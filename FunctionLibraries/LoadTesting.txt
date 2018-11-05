@@ -27,7 +27,7 @@
 ''@Param Drtn:      In
 ''@Param Desc:      The name of the file to download
 ''--------------------------------------------------------------------------------------------------------------------------
-''@Example:  DownloadQCAttachment "pscp.exe"
+''Example:  DownloadQCAttachment "pscp.exe"
 '' If strFileName param is not passed then all attachments will be downloaded
 ''--------------------------------------------------------------------------------------------------------------------------
 Function DownloadQCAttachment(strQCDir, strFileName, strTargetPath)
