@@ -1,10 +1,10 @@
 '##########################################################################################################################
-''Function:        NavigateToObjectScreenUICatalog
-''Description: 	Navigate to the passed screen in PhoneLookup
-''Created By: 		
-''Created On: 		
+''@Function:        NavigateToObjectScreenUICatalog
+''@Description: 	Navigate to the passed screen in PhoneLookup
+''@Created By: 		
+''@Created On: 		
 ''--------------------------------------------------------------------------------------------------------------------------
-''Example:   	
+''@Example:   	
 ''--------------------------------------------------------------------------------------------------------------------------
 
 Function NavigateToObjectScreenUICatalog(objTestObject , intMode , strCase , strItemToSelect)
