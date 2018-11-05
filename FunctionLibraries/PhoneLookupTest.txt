@@ -1,0 +1,1070 @@
+'Disable reporting
+Reporter.Filter = rfDisableAll
+'All methods for PhoneLookup app go here..!!
+
+'##########################################################################################################################
+''@Function:  LoginAndNavigateToControlsPage
+''@Description:  Login and Navigate to controls page on PhoneLookUP App
+''@Return Type:	Boolean
+''@Created By: Shweta
+'@Modified By : Manisha
+''@Created On: 10/19/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  strObjItem 
+''@Param Type:   String
+''@Param Drtn: 		In
+''@Param Desc: 	Item to select from controls Page eg. MKMapView , UIButton etc
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  objTestObject 
+''@Param Type:   Object
+''@Param Drtn: 		In
+''@Param Desc: 	Function returns TRUE if this object exists
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: Set  objTestObject = MobiDevice("PhoneLookup").MobiEdit("Edit")
+'flag = LoginAndNavigateToControlsPage(objUISlider, objTestObject )
+'flag = LoginAndNavigateToControlsPage("" , objTestObject)
+'--------------------------------------------------------------------------------------------------------------------------
+
+Function  LoginAndNavigateToControlsPage (strObjItem , objTestObject)
+
+	Reporter.Filter = rfEnableAll
+	Reporter.ReportEvent micDone, Environment("StepName") & " starts", ""
+	Environment("MobiObjectClass") = objTestObject.GetTOProperty("micclass")
+
+	'create description for MobiDevice
+	Set objDevice = Description.Create
+	objDevice("name").Value = "PhoneLookup"
+
+	blnCheck = True
+	If strObjItem = "" Then
+		blnCheck = False
+	End If
+
+	'Setting initial flag value
+	Flag = False
+   
+   'Settings initial return value
+   LoginAndNavigateToControlsPage = false
+
+   If  Not objTestObject.Exist(5)  OR objTestObject.GetTOProperty("micclass") = "MobiDevice" Then
+		
+		'@login to app
+		blnFlag = Login("mobilelabs","demo")
+	
+		'Verify Sign In
+'		If  MobiDevice(objDevice).MobiButton("name:=Logout").Exist(1) AND MobiDevice(objDevice).MobiImage("name:=.*.search.*png").Exist(1) Then
+		If  blnFlag  Then
+			wait 7
+			'Click on Controls image
+			selectMenuOption("Controls")
+'			If MobiDevice(objDevice).MobiList("allitems:=.*UIActivityIndicatorView.*").Exist(5) Then
+			If MobiDevice("PhoneLookup").MobiList("lstControls").Exist(2) and MobiDevice("PhoneLookup").MobiButton("Logout").Exist(1) then
+				Flag = True
+
+				If  blnCheck  Then
+					'Select  item  from the list
+					MobiDevice(objDevice).MobiList("name:=List").Select strObjItem
+				End If
+			End If			
+		End If 
+
+	End If 
+
+	'Verfiy existence of Page
+	If objTestObject.Exist(5) OR Flag Then		
+			Reporter.ReportEvent micPass, Environment("StepName"), "Successfully navigated to " & Environment("MobiObjectClass") & "  item"
+			LoginAndNavigateToControlsPage = True
+	Else
+			strSummary = "Failed to navigate to " & Environment("MobiObjectClass")  & " item"
+			strActualResult = "Unable to open " & Environment("MobiObjectClass") & " item"
+			Reporter.ReportEvent micFail, Environment("StepName"), strActualResult
+			ExitTest
+	End If
+
+	Set objDevice = Nothing
+	Reporter.ReportEvent micDone, Environment("StepName") & " ends", ""
+	Reporter.Filter = rfDisableAll
+
+End Function
+
+
+'##########################################################################################################################
+''@Function:  Login
+''@Description:  Login to App
+''@Return Type:	Boolean
+''@Created By: Amit
+''@Created On: 06/19/2013
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  strUserName 
+''@Param Type:   String
+''@Param Drtn: 		In
+''@Param Desc: 	UserName for login to app
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  strPassword 
+''@Param Type:   String
+''@Param Drtn: 		In
+''@Param Desc: 	Password for login to app
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: blnFlag = Login("mobilelabs", "demo")
+'--------------------------------------------------------------------------------------------------------------------------
+Function Login(strUserName, strPassword)
+
+	'Call the function  Logout
+	Logout
+	Set objDevice = MobiDevice("name:=Phone.*")
+	strPlatform = objDevice.getroproperty("platform")
+	If Instr(1 , LCase(strPlatform), "ios")  > 0 OR Instr(1 , LCase(strPlatform), "iphone os")  > 0 Then
+		'Set  Username and Password
+		objDevice.MobiEdit("index:=0").Set(strUserName)
+		wait 1
+		objDevice.MobiEdit("index:=1").Set(strPassword)
+		wait 1
+		objDevice.MobiSwitch("name:=Switch").Set eACTIVATE
+	Else
+		'Set  Username and Password
+		objDevice.MobiEdit("accessibilitylabel:=Username Field").Set(strUserName)
+		wait 1
+		objDevice.MobiEdit("accessibilitylabel:=passwordEditText").Set(strPassword)
+		wait 1
+		objDevice.MobiEdit("accessibilitylabel:=passwordEditText").Click
+		wait 2
+		objDevice.ButtonPress eBACK	
+	End If
+		
+	'Click on Sign In button
+	objDevice.MobiButton("name:=SignIn|SIGNIN").Click
+	'Hide device keypad in case of nativeAutomation.
+		If objDevice.MobiElement("accessibilitylabel:=q|z","index:=0").Exist(3) Then
+			objDevice.ButtonPress eBACK
+		wait 2
+		End If
+	wait(3)
+	If objDevice.MobiElement("text:=Search","visible:=True").Exist(3)  Then
+		Login = True
+	Else
+		Login = False
+	End If
+End Function
+
+''##########################################################################################################################
+'''@Sub:  Logout
+'''@Description:  Logs out of the PhoneLookup app
+'''@Return Type:	Boolean
+'''@Created By: Naveen
+'''@Created On: 01/25/2013
+'''--------------------------------------------------------------------------------------------------------------------------
+'''@Example: Logout
+''--------------------------------------------------------------------------------------------------------------------------
+'Sub Logout
+'	 'create description for MobiDevice
+'	Set objDevice = Description.Create
+'	objDevice("name").Value = "PhoneLookup"
+'
+'	'create description for MobiButton
+'		Set objButton = Description.Create
+'		objButton("micclass").Value = "MobiButton"
+'	
+'	'Loop until Base state is reached
+'	Do Until MobiDevice(objDevice).MobiButton("name:=SignIn").Exist(2)
+'		Set btnObjects =  MobiDevice(objDevice).ChildObjects(objButton)
+'	
+'		For  i = 0  to  btnObjects.Count-1
+'		
+'			If btnObjects(i).GetROProperty("name") = "Button" OR btnObjects(i).GetROProperty("name") = "Logout" Then
+'				'Click on button
+'				btnObjects(i).Click
+'				Exit For
+'			End If
+'		
+'		Next
+'		Set btnObjects = Nothing
+'	Loop
+'
+'	Set objButton = Nothing
+'	Set objDevice = Nothing
+'End Sub
+
+
+
+'##########################################################################################################################
+''@Function:  LogOut
+''@Description:  LogOut and navigate to Login Screen (Applicable for both Android and IOS Platform)
+''@Return Type:	Boolean
+''@Created By: Shweta
+''@Created On: 30/01/2013
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example:
+'flag =  LogOut
+'--------------------------------------------------------------------------------------------------------------------------
+
+Function LogOut 
+
+	On Error Resume Next
+
+	'Setting initial return value
+	LogOut  =  False
+
+	'MobiDevice Description
+   Set objDevice = Description.Create
+   objDevice("micclass").Value = "MobiDevice"
+
+	'Fetching platform value at run time
+   strPlatform  = MobiDevice(objDevice).GetROProperty("platform")
+
+	If Not MobiDevice(objDevice).MobiElement("text:=Username").Exist(3) Then
+
+		'Android Platform
+		If  Instr(1 , LCase(strPlatform), "android")  > 0 Then
+		
+			'Open Menu
+			MobiDevice(objDevice).ButtonPress eMENU
+			wait 2
+			'Verify existence of Logout Element in Menu 
+			If MobiDevice(objDevice).MobiElement("name:=LogOut").Exist(5)   Then
+				'Click Logout Element
+				MobiDevice(objDevice).MobiElement("name:=LogOut").Click
+				wait 1
+				'Refresh Object
+				MobiDevice(objDevice).RefreshObject
+				'Hide device keypad in case of nativeAutomation.
+					If MobiDevice(objDevice).MobiElement("accessibilitylabel:=q|z","index:=0").Exist(3) Then
+						MobiDevice(objDevice).ButtonPress eBACK
+					wait 2
+					End If
+			Else
+				Do While Not  MobiDevice(objDevice).MobiElement("name:=LogOut").Exist  
+				'Click on back button in case menu option is not available
+				MobiDevice(objDevice).ButtonPress eBACK
+				
+				Wait 2
+				'Open menu
+				MobiDevice(objDevice).ButtonPress eMENU
+				wait 2
+				Loop
+				MobiDevice(objDevice).MobiElement("name:=LogOut").Click
+				MobiDevice(objDevice).RefreshObject
+				'Hide device keypad in case of nativeAutomation.
+					If MobiDevice(objDevice).MobiElement("accessibilitylabel:=q|z","index:=0").Exist(3) Then
+						MobiDevice(objDevice).ButtonPress eBACK
+					wait 2
+					End If
+			End If
+		
+		'IOS Platform
+		ElseIf  Instr(1 , LCase(strPlatform), "iphone")  > 0  Then
+		
+			'create description for MobiButton
+			'	Set objButton = Description.Create
+			'	objButton("micclass").Value = "MobiButton"
+			
+			'Loop until Login screen is reached
+			Do Until MobiDevice(objDevice).MobiElement("text:=Sign In").Exist(2)
+				If  MobiDevice(objDevice).MobiButton("name:= Logout").Exist(1)Then
+					MobiDevice(objDevice).MobiButton("name:= Logout").Click
+					Exit Do 
+				End If
+				MobiDevice(objDevice).MobiButton("location:= 0").Click
+				'	Set btnObjects =  MobiDevice(objDevice).ChildObjects(objButton)
+				'
+				'			For  i = 0  to  btnObjects.Count-1
+				'				If btnObjects(i).GetROProperty("name") = "Button" OR btnObjects(i).GetROProperty("name") = "Logout" Then
+				'					'Click on button
+				'					btnObjects(i).Click
+				'					wait (2)
+				'				End If
+				'			Next
+			Loop
+			
+		End If 
+
+	End If
+
+	'Verify Existence of  Sign In element
+	If  MobiDevice(objDevice).MobiElement("text:=Username").Exist(5)  Then
+			Reporter.ReportEvent micPass, Environment("StepName"), "Successfully navigated to Login Screen" 
+			LogOut = True
+	Else
+			strSummary = "Logout  failed"
+			strActualResult = "Failed to navigate to Login Screen"
+			Reporter.ReportEvent micFail, Environment("StepName"), strActualResult
+			ExitTest
+	End If
+
+End Function
+
+
+'##########################################################################################################################
+'##########################################################################################################################
+''@Function:  NavigateScreenOnPhoneLookup
+''@Description:  Navigate to screen i.e Settings , Controls , Search or Login on PhoneLookup
+''@Return Type:	Boolean
+''@Created By: Shweta
+''@Created On: 30/01/2013
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  strScreen 
+''@Param Type:   String
+''@Param Drtn: 		In
+''@Param Desc: 	Screen name eg. Settings , Controls , Search or Login Screen
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  objTestObject 
+''@Param Type:   Object
+''@Param Drtn: 	In
+''@Param Desc: 	Objectname on which action needs to be performed
+''--------------------------------------------------------------------------------------------------------------------------
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  strItemToSelect 
+''@Param Type:   String
+''@Param Drtn: 		In
+''@Param Desc: 	Item value in case of  selection from the Controls list  "" otherwise.
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: Set  objTestObject = MobiDevice("PhoneLookup").MobiEdit("Edit")
+'flag = NavigateScreenOnPhoneLookup("homepage" , objTestObject , "" )
+'flag = NavigateScreenOnPhoneLookup"Controls" , objTestObject  , "Spinner")
+'--------------------------------------------------------------------------------------------------------------------------
+Function NavigateScreenOnPhoneLookup_old(strScreen , objTestObject , strItemToSelect)
+   On Error Resume Next
+	Reporter.Filter = rfEnableAll
+	Reporter.ReportEvent micDone, Environment("StepName") & " starts", ""
+	 Environment("MobiObjectClass") = objTestObject.GetTOProperty("micclass")
+
+   'Settings initial return value
+   NavigateScreenOnPhoneLookup = False
+   
+   Flag_LogOut = LogOut
+
+   If Flag_LogOut Then
+
+    'create description for MobiDevice
+	Set objDevice = Description.Create
+	objDevice("micclass").Value = "MobiDevice"
+	objDevice("name").Value = "Phone Lookup"
+
+	'Create decsription for MobiEdit
+	Set objEdit = Description.Create
+	objEdit("micclass").Value = "MobiEdit"
+
+	Select Case Lcase(strScreen)
+
+	Case  "login" 
+		'Verify existence of  "Sign In" button
+		If  MobiDevice(objDevice).MobiElement("name:=Login").Exist And objTestObject.Exist Then
+				NavigateScreenOnPhoneLookup = True
+		End If
+
+	Case  "search" , "controls" , "settings" , "results"
+		'Return MobiEdit objects on Homepage
+		Set EditObjects = MobiDevice(objDevice).ChildObjects(objEdit)
+
+		If EditObjects.Count = 2 Then
+
+					'Set  Login Username and password
+					EditObjects(0).Set "mobilelabs"
+					wait 1
+					EditObjects(1).Set "demo" 
+					wait 1
+'					strPlatform = objDevice.getroproperty("platform")
+'					If Instr(1 , LCase(strPlatform), "ios")  > 0 OR Instr(1 , LCase(strPlatform), "iphone os")  > 0 Then
+'						'Set  Username and Password
+'						objDevice.MobiEdit("index:=0").Set(strUserName)
+'						wait 1
+'						objDevice.MobiEdit("index:=1").Set(strPassword)
+'						wait 1
+'						objDevice.MobiSwitch("name:=Switch").Set eACTIVATE
+'					Else
+'						'Set  Username and Password
+'						objDevice.MobiEdit("accessibilitylabel:=Username Field").Set(strUserName)
+'						wait 1
+'						objDevice.MobiEdit("accessibilitylabel:=passwordEditText").Set(strPassword)
+'						wait 1
+'						objDevice.MobiEdit("accessibilitylabel:=passwordEditText").Click
+'						objDevice.ButtonPress eBACK	
+'					End If
+
+					'Click SignIn button
+					MobiDevice(objDevice).MobiButton("name:=SignIn|SIGNIN").Click
+					If MobiDevice(objDevice).GetROProperty("devicetype")="Nexus 5" Then
+						MobiDevice(objDevice).ButtonPress eBACK
+					End If
+					Wait 1 
+
+					'Verify Search screen
+					If  LCase(strScreen) =  "search" Then
+						If MobiDevice(objDevice).MobiElement("name:=Search").Exist  And  objTestObject.Exist Then
+							NavigateScreenOnPhoneLookup = True
+						End If
+					'Verify Settings screen
+					ElseIf  LCase(strScreen) =  "settings"  Then
+								MobiDevice(objDevice).ButtonPress eMENU
+								wait 2
+								If MobiDevice(objDevice).MobiElement("name:= Settings").Exist   Then
+										MobiDevice(objDevice).MobiElement("name:= Settings").Click
+										MobiDevice(objDevice).RefreshObject
+										wait 4
+										If MobiDevice(objDevice).MobiElement("name:=BackgoundColor").Exist  And  objTestObject.Exist  Then
+											NavigateScreenOnPhoneLookup = True
+										End If
+								End If
+
+						ElseIf LCase(strScreen) =  "results"  Then
+'								Set objChkBox = Description.Create
+'								objChkBox("micclass").Value = "MobiCheckbox"
+'								Set arrChkbox = MobiDevice(objDevice).ChildObjects(objChkBox)
+'
+'								'Check all checkboxes
+'								For i = o to arrChkbox.Count -1
+'									If  LCase(arrChkbox(i).GetROProperty("checked")) = "false" Then
+'											arrChkbox(i).Click
+'									End If
+'
+'								Next
+
+								'Click on Serch button
+								MobiDevice(objDevice).MobiButton("name:=Search|SEARCH").Click
+								Wait 2
+
+								If  MobiDevice(objDevice).MobiElement("name:=Results").Exist  AND objTestObject.Exist  Then
+											NavigateScreenOnPhoneLookup = True
+								End If
+
+						'Verfiy Controls screen
+						ElseIf  LCase(strScreen) =  "controls"  Then 
+								MobiDevice(objDevice).ButtonPress eMENU
+								wait 2
+								If MobiDevice(objDevice).MobiElement("name:=Controls").Exist (10) Then
+										MobiDevice(objDevice).MobiElement("name:=Controls").Click
+										Wait 3
+										MobiDevice(objDevice).RefreshObject
+										wait 1
+										If MobiDevice(objDevice).MobiElement("text:=Controls").Exist (10) Then
+											'Check if item selection from control list  required
+												If  strItemToSelect = ""  Then
+													'If 	MobiDevice(objDevice).MobiList("allitems:=.*ZoomControls.*").Exist  And objTestObject.Exist   Then
+														If objTestObject.Exist   Then
+																NavigateScreenOnPhoneLookup = True
+														End If													
+											'End If
+												Else
+														Wait 5						 
+													'Select  item from Controls list
+														MobiDevice("micclass:=MobiDevice").MobiList("name:=List").Select  strItemToSelect 
+														MobiDevice("micclass:=MobiDevice").MobiList("name:=List").WaitProperty "visible" , True , 10000
+
+														'In case of datetimepicker
+														If  LCase(strItemToSelect)  = "timepicker" OR LCase(strItemToSelect) = "datepicker" Then
+															MobiDevice(objDevice).MobiButton("name:=.*Change.*|.*CHANGE.*").Click
+															Wait 3
+															End If
+
+														If objTestObject.Exist(5) Then
+															NavigateScreenOnPhoneLookup = True
+											End If			
+											End If
+										End If
+									End If 
+								End If
+				End If 
+	End Select
+End If
+
+If   NavigateScreenOnPhoneLookup  Then
+		Reporter.ReportEvent micPass, Environment("StepName"), "Successfully navigated to " &  Environment("MobiObjectClass")  & " screen"
+		NavigateScreenOnPhoneLookup = True
+Else
+		strSummary = "Failed to navigate to " &  Environment("MobiObjectClass")   & " screen"
+		strActualResult = "Unable to open " &  Environment("MobiObjectClass")  & " screen"
+		Reporter.ReportEvent micFail, Environment("StepName"), strActualResult
+		'ReportFailure "Navigate item", strSummary, Environment("Component"), Environment("StepsToReproduce") , _
+	'	strActualResult, Environment("ExpectedResult")
+End If
+
+End Function
+
+Function NavigateScreenOnPhoneLookup(strScreen , objTestObject , strItemToSelect)
+	On Error Resume Next
+	Reporter.Filter = rfEnableAll
+	Reporter.ReportEvent micDone, Environment("StepName") & " starts", ""
+	Environment("MobiObjectClass") = objTestObject.GetTOProperty("micclass")
+	'Settings initial return value
+	NavigateScreenOnPhoneLookup = False
+    Flag_LogOut = LogOut
+	If Flag_LogOut Then
+		'create description for MobiDevice
+		Set objDevice = Description.Create
+		objDevice("micclass").Value = "MobiDevice"
+		objDevice("name").Value = "Phone.*"
+		'Create decsription for MobiEdit
+		'Set objEdit = Description.Create
+		'objEdit("micclass").Value = "MobiEdit"
+		Select Case Lcase(strScreen)
+		Case  "login" 
+			'Verify existence of  "Sign In" button
+			If  MobiDevice(objDevice).MobiElement("name:=Login").Exist And objTestObject.Exist Then
+					NavigateScreenOnPhoneLookup = True
+			End If
+
+		Case  "search" , "controls" , "settings" , "results"
+			'Return MobiEdit objects on Homepage
+			'Set EditObjects = MobiDevice(objDevice).ChildObjects(objEdit)
+			'If EditObjects.Count = 2 Then
+				'Set  Login Username and password
+			'	EditObjects(0).Set "mobilelabs"
+			'	wait 1
+			'	EditObjects(1).Set "demo" 
+			'	wait 1
+			strPlatform = MobiDevice(objDevice).getroproperty("platform")
+			If Instr(1 , LCase(strPlatform), "ios")  > 0 OR Instr(1 , LCase(strPlatform), "iphone os")  > 0 Then
+				'Set  Username and Password
+				MobiDevice(objDevice).MobiEdit("index:=0").Set "mobilelabs"
+				wait 1
+				MobiDevice(objDevice).MobiEdit("index:=1").Set "demo"
+				wait 1
+				MobiDevice(objDevice).MobiSwitch("name:=Switch").Set eACTIVATE
+			Else
+				'Set  Username and Password
+				MobiDevice(objDevice).MobiEdit("accessibilitylabel:=Username Field").Set "mobilelabs"
+				wait 1
+				MobiDevice(objDevice).MobiEdit("accessibilitylabel:=passwordEditText").Set "demo"
+				wait 1
+				MobiDevice(objDevice).MobiEdit("accessibilitylabel:=passwordEditText").Click
+				wait 1
+				MobiDevice(objDevice).ButtonPress eBACK	
+				wait 1
+			End If
+				'Click SignIn button
+				MobiDevice(objDevice).MobiButton("name:=SignIn|SIGNIN").Click
+				Wait 1 	
+				'Hide device keypad in case of nativeAutomation.
+					If MobiDevice(objDevice).MobiElement("accessibilitylabel:=q|z","index:=0").Exist(3) Then
+						MobiDevice(objDevice).ButtonPress eBACK
+					wait 2
+				    End If
+				'Verify Search screen
+				If  LCase(strScreen) =  "search" Then
+					If MobiDevice(objDevice).MobiElement("name:=Search").Exist  And  objTestObject.Exist Then
+						NavigateScreenOnPhoneLookup = True
+					End If
+					'Verify Settings screen
+				ElseIf  LCase(strScreen) =  "settings"  Then
+						MobiDevice(objDevice).ButtonPress eMENU
+						wait 2
+						If MobiDevice(objDevice).MobiElement("name:= Settings").Exist   Then
+							MobiDevice(objDevice).MobiElement("name:= Settings").Click
+							MobiDevice(objDevice).RefreshObject
+							wait 4
+							If MobiDevice(objDevice).MobiElement("name:=BackgoundColor").Exist  And  objTestObject.Exist  Then
+								NavigateScreenOnPhoneLookup = True
+							End If
+						End If
+				ElseIf LCase(strScreen) =  "results"  Then
+						Set objChkBox = Description.Create
+						objChkBox("micclass").Value = "MobiCheckbox"
+						Set arrChkbox = MobiDevice(objDevice).ChildObjects(objChkBox)
+						'Check all checkboxes
+'						For i = o to arrChkbox.Count -1
+'						If  LCase(arrChkbox(i).GetROProperty("checked")) = "false" Then
+'							arrChkbox(i).Click
+'						End If
+'						Next
+					'Click on Serch button
+					MobiDevice(objDevice).MobiButton("name:=Search|SEARCH").Click
+					Wait 2
+						If  MobiDevice(objDevice).MobiElement("name:=Results").Exist  AND objTestObject.Exist  Then
+							NavigateScreenOnPhoneLookup = True
+						End If
+				'Verfiy Controls screen
+				ElseIf  LCase(strScreen) =  "controls"  Then 
+						MobiDevice(objDevice).ButtonPress eMENU
+						wait 2
+						If MobiDevice(objDevice).MobiElement("name:=Controls").Exist (10) Then
+							MobiDevice(objDevice).MobiElement("name:=Controls").Click
+							Wait 3
+							MobiDevice(objDevice).RefreshObject
+							wait 1
+							If MobiDevice(objDevice).MobiElement("text:=Controls").Exist (10) Then
+								'Check if item selection from control list  required
+								If  strItemToSelect = ""  Then
+									'If 	MobiDevice(objDevice).MobiList("allitems:=.*ZoomControls.*").Exist  And objTestObject.Exist   Then
+										If objTestObject.Exist   Then
+											NavigateScreenOnPhoneLookup = True
+										End If													
+									'End If
+								Else
+									Wait 5						 
+									'Select  item from Controls list
+									MobiDevice("micclass:=MobiDevice").MobiList("name:=List").Select  strItemToSelect 
+									MobiDevice("micclass:=MobiDevice").MobiList("name:=List").WaitProperty "visible" , True , 10000
+									'In case of datetimepicker
+									If  LCase(strItemToSelect)  = "timepicker" OR LCase(strItemToSelect) = "datepicker" Then
+										MobiDevice(objDevice).MobiButton("name:=.*Change.*|.*CHANGE.*").Click
+										Wait 3
+									End If
+									If objTestObject.Exist(5) Then
+										NavigateScreenOnPhoneLookup = True
+									End If			
+								End If
+							End If
+						End If 
+				End If
+			'End If 
+		End Select
+End If
+
+If   NavigateScreenOnPhoneLookup  Then
+		Reporter.ReportEvent micPass, Environment("StepName"), "Successfully navigated to " &  Environment("MobiObjectClass")  & " screen"
+		NavigateScreenOnPhoneLookup = True
+Else
+		strSummary = "Failed to navigate to " &  Environment("MobiObjectClass")   & " screen"
+		strActualResult = "Unable to open " &  Environment("MobiObjectClass")  & " screen"
+		Reporter.ReportEvent micFail, Environment("StepName"), strActualResult
+		'ReportFailure "Navigate item", strSummary, Environment("Component"), Environment("StepsToReproduce") , _
+	'	strActualResult, Environment("ExpectedResult")
+End If
+
+End Function
+
+'##########################################################################################################################
+''@Sub:  		selectMenuOption
+''@Description: Selects the passed in option from the Navigation List at the bottom
+''@Return Type:	N/A
+''@Created By: 	Saurabh
+''@Created On:	07/17/2012
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  strOption 
+''@Param Type:  String
+''@Param Drtn: 	In
+''@Param Desc: 	Option to select. Valid values are
+''				"Settings"
+''				"Search"
+''				"Controls"
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: selectMenuOption "Controls"
+'--------------------------------------------------------------------------------------------------------------------------
+
+Sub selectMenuOption(ByVal strOption)
+
+	If MobiDevice("PhoneLookup").MobiImage("value:=59d7911173ba32970509d3cc944c667bfbbadd34").Exist(5) Then
+	    strValue = "59d7911173ba32970509d3cc944c667bfbbadd34"  'controls ios
+	ElseIf MobiDevice("PhoneLookup").MobiImage("value:=5f73769b5479e48ac0e19b5fe3f122c59bbb6692").Exist(5) Then
+	   strValue=  "5f73769b5479e48ac0e19b5fe3f122c59bbb6692"  'search ios
+	ElseIf MobiDevice("PhoneLookup").MobiImage("value:=a292c78ef0ddcdb50ea49e49fa073dc531b2b061").Exist(5) Then
+	   strValue =  "a292c78ef0ddcdb50ea49e49fa073dc531b2b061" 'setings ios
+	Elseif MobiDevice("PhoneLookup").MobiImage("value:= 955fe749095914a9937bb94253fc6204dc208ff6").Exist(5) Then
+		strvalue = "955fe749095914a9937bb94253fc6204dc208ff6"  'search ipad2
+	Elseif MobiDevice("PhoneLookup").MobiImage("value:=5b6d93b12d016745b4f0e10b8552b690f2568bb4").Exist(5) Then
+	  strvalue = "5b6d93b12d016745b4f0e10b8552b690f2568bb4" 'controls ipad2
+	 Elseif MobiDevice("PhoneLookup").MobiImage("value:=d418da9a5461f3f317d35a949d0c1baf2e5ccead").Exist(5) Then
+	  strvalue = "d418da9a5461f3f317d35a949d0c1baf2e5ccead"  'settings ipad2
+	End If
+
+	Set objToolbar =  MobiDevice("PhoneLookup").MobiImage("value:=" & strValue)
+
+	Select Case LCase(strOption)
+		Case "search"
+						intClickX = Cint (objToolbar.GetROProperty("width")/3)
+						Set objToWaitFor = MobiElement("text:=Search","nativeclass:=UINavigationItemView")
+		Case "controls"
+						intClickX = Cint( objToolbar.GetROProperty("width")/2)
+						Set objToWaitFor = MobiElement("text:=Controls","nativeclass:=UINavigationItemView")
+		Case "settings"
+						intClickX = Cint (objToolbar.GetROProperty("width")-15)
+						Set objToWaitFor = MobiElement("text:=Settings","nativeclass:=UINavigationItemView")
+	End Select
+
+	intClickY = cint (objToolbar.GetROProperty("height")/2)
+	objToolbar.Click intClickX, intClickY
+	
+	objToWaitFor.WaitProperty "visible", True, 10000
+	
+End Sub
+
+'##########################################################################################################################
+''@Function:  	GoToScreen
+''@Description: Navigates to the screen specified. Currently works for Android
+''@Return Type:	Boolean
+''@Created By: 	Naveen
+''@Created On:	07/17/2013
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  strScreenName 
+''@Param Type:  String
+''@Param Drtn: 	In
+''@Param Desc: 	Screen name to go to. Valid values are
+''				"Login"
+''				"Search"
+''				"Controls"
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: blnResult = GoToScreen("Controls")
+'--------------------------------------------------------------------------------------------------------------------------
+Function GoToScreen(strScreenName)
+
+	On Error Resume Next
+	Set objQTP = CreateObject("QuickTest.Application")
+	objQTP.Test.Settings.Run.ObjectSyncTimeOut = 10000
+	intWait = 3
+	intMilliWait = 3000
+	GoToScreen = False
+	
+	'Creating object descriptions
+	Set objDevice = MobiDevice("micclass:=MobiDevice")
+	Set objSearchButton = MobiButton("text:=Search|SEARCH")
+	Set objSignInButton = MobiButton("text:=Sign In|SIGN IN")
+	Set objResultsElement = MobiElement("text:=Results|RESULTS","nativeclass:=android.widget.TextView")
+	Set objControlsElement = MobiElement("text:=Controls|CONTROLS","nativeclass:=android.widget.TextView")
+	Set objMenuControls = MobiElement("nativeclass:=android.widget.TextView","text:=Controls")
+	
+	strPlatform = LCase(objDevice.GetROProperty("platform"))
+	If InStr(1, strPlatform, "android", 1) > 0 Then
+		strPlatform = "android"
+	ElseIf InStr(1, strPlatform, "ios", 1) > 0 Then
+		strPlatform = "ios"
+	End If
+	
+	Select Case LCase(strScreenName)
+		Case "login"
+			If MobiButton("text:=Sign In|SIGN IN").GetROProperty("visible") Then
+				GoToScreen = True
+			Else
+				GoToScreen = LogOut
+			End If
+			
+		Case "search"
+								
+			If objSearchButton.Exist(intWait) AND IsVisible(objSearchButton, 2000) Then
+				GoToScreen = True
+			ElseIf objSignInButton.Exist(intWait) Then
+				blnResult = Login("mobilelabs","demo")
+				If blnResult Then
+					If IsVisible(objSearchButton, 2000) Then
+						GoToScreen = True
+					End If
+				End If
+			ElseIf objResultsElement.Exist(intWait) Then
+				objDevice.ButtonPress eBACK
+				objSearchButton.WaitProperty "visible", True, intMilliWait
+				If IsVisible(objSearchButton, 2000) Then
+					GoToScreen = True
+				End If
+			ElseIf objControlsElement.Exist(intWait) AND IsVisible(objControlsElement, 2000) Then
+				objDevice.ButtonPress eBACK
+				objSearchButton.WaitProperty "visible", True, intMilliWait
+				If IsVisible(objSearchButton, 2000) Then
+					GoToScreen = True
+				End If
+			Else
+				GoToScreen = Login("mobilelabs","demo")
+			End If
+			
+		Case "controls"
+			If objControlsElement.Exist(intWait) AND IsVisible(objControlsElement, 2000) Then
+				GoToScreen = True
+			ElseIf objSignInButton.Exist(intWait) Then
+				If Login("mobilelabs","demo") Then
+					objDevice.Activate
+					wait 2 
+					objDevice.ButtonPress eMENU
+					wait 2
+					objMenuControls.Click
+					If IsVisible(objControlsElement, 2000) Then
+						GoToScreen = True
+					End If
+				End If
+			ElseIf objResultsElement.Exist(intWait) Then
+				objDevice.Activate
+				wait 2 
+				objDevice.ButtonPress eBACK
+				objSearchButton.WaitProperty "visible", True, intMilliWait
+				objDevice.ButtonPress eMENU
+				wait 2
+				objMenuControls.Click
+				If IsVisible(objControlsElement, 2000) Then
+					GoToScreen = True
+				End If
+			ElseIf objSearchButton.Exist(intWait) AND IsVisible(objSearchButton, 2000) Then
+				objDevice.Activate
+				wait 1
+				objDevice.ButtonPress eMENU
+				wait 2
+				objMenuControls.Click
+				If IsVisible(objControlsElement, 2000) Then
+					GoToScreen = True
+				End If
+			Else
+			'ElseIf Not(IsMainHeader) Then
+				For i = 1 To 5
+					objDevice.Activate
+				    wait 2 
+					objDevice.ButtonPress eBACK
+					wait 1
+					objControlsElement.WaitProperty "visible", True, intMilliWait
+					If IsVisible(objControlsElement, 10000) Then
+						GoToScreen = True
+						Exit For
+					End If
+				Next
+'				If Login("mobilelabs","demo") Then
+'					objDevice.Activate
+'				    wait 1 
+'					objDevice.ButtonPress eMENU
+'					wait 2
+'					objMenuControls.Click
+'					If IsVisible(objControlsElement, 2000) Then
+'						GoToScreen = True
+'					End If
+'				End If
+			End If
+			
+	End Select
+	
+	On Error GoTo 0
+	objQTP.Test.Settings.Run.ObjectSyncTimeOut = 20000
+End Function
+
+
+'##########################################################################################################################
+''@Function:  	IsVisible
+''@Description:	Checks if the object is visible or not. Use this function if you have set On Error Resume Next
+''@Return Type:	Boolean. If object doesn't exist and GetRO returns EMPTY then this function will covert it
+''				into boolean value False.
+''@Created By: 	Naveen
+''@Created On:	07/17/2013
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  objTestObject 
+''@Param Type:  Object
+''@Param Drtn: 	In
+''@Param Desc: 	This object's  run-time "visible" property value will be returned
+'--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  intTimeOut 
+''@Param Type:  Integer
+''@Param Drtn: 	In
+''@Param Desc: 	Timeout in milliseconds for the WaitProperty
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: Set objElement = MobiDevice("micclass:=MobiDevice").MobiElement("text:=Search")
+''			blnResult = IsVisible(objElement, 5000)
+'--------------------------------------------------------------------------------------------------------------------------
+Function IsVisible(ByVal objTestObject, ByVal intTimeOut)
+	On Error Resume Next
+	objTestObject.WaitProperty "visible", True, intTimeOut
+	IsVisible = objTestObject.GetROProperty("visible")
+	If IsEmpty(IsVisible) Then
+		IsVisible = False
+	End If
+	On Error GoTo 0
+End Function
+
+
+
+'##########################################################################################################################
+''@Function:  	IsMainHeader
+''@Description:	Checks if the screen header is one of the following or not
+''				"Search", "Results", "Login", "Settings", "Controls"
+''				If present then returns True
+''				If not then it assumes that a specific control screen is open and returns False
+''@Return Type:	Boolean
+''@Created By: 	Naveen
+''@Created On:	07/17/2013
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: blnResult = IsMainHeader			
+'--------------------------------------------------------------------------------------------------------------------------
+Function IsMainHeader
+	IsMainHeader = False
+	arrHeaders = Array("Search", "Results", "Login", "Settings", "Controls")
+	strHeaderText = LCase(MobiDevice("micclass:=MobiDevice").MobiElement("index:=0" , "visible:=True").GetROProperty("text"))
+	wait 4
+	For i = 0 To UBound(arrHeaders)
+		If strHeaderText = LCase(arrHeaders(i)) Then
+			IsMainHeader = True
+			Exit For
+		End If
+	Next
+End Function
+
+
+
+'##########################################################################################################################
+'##########################################################################################################################
+''@Function:  NavigateScreenOnPhoneLookupNative
+''@Description:  Navigate to screen i.e Settings , Controls , Search or Login on PhoneLookup
+''@Return Type:	Boolean
+''@Created By: Ananya
+''@Created On: 25/01/2017
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  strScreen 
+''@Param Type:   String
+''@Param Drtn: 		In
+''@Param Desc: 	Screen name eg. Settings , Controls , Search or Login Screen
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  objTestObject 
+''@Param Type:   Object
+''@Param Drtn: 	In
+''@Param Desc: 	Objectname on which action needs to be performed
+''--------------------------------------------------------------------------------------------------------------------------
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  strItemToSelect 
+''@Param Type:   String
+''@Param Drtn: 		In
+''@Param Desc: 	Item value in case of  selection from the Controls list  "" otherwise.
+''--------------------------------------------------------------------------------------------------------------------------
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  objSelectFrom 
+''@Param Type:   object
+''@Param Drtn: 		In
+''@Param Desc: 	List on which action needs to be performed
+''--------------------------------------------------------------------------------------------------------------------------
+''@Example: Set  objTestObject = MobiDevice("PhoneLookup").MobiEdit("Edit")
+'flag = NavigateScreenOnPhoneLookup("homepage" , objTestObject , "" )
+'flag = NavigateScreenOnPhoneLookup"Controls" , objTestObject  , "Spinner")
+'--------------------------------------------------------------------------------------------------------------------------
+Function NavigateScreenOnPhoneLookupNative(strScreen , objTestObject , strItemToSelect , objSelectFrom)
+   On Error Resume Next
+	Reporter.Filter = rfEnableAll
+	Reporter.ReportEvent micDone, Environment("StepName") & " starts", ""
+	 Environment("MobiObjectClass") = objTestObject.GetTOProperty("micclass")
+
+   'Settings initial return value
+   NavigateScreenOnPhoneLookupNative = False
+   
+   Flag_LogOut = LogOut
+
+   If Flag_LogOut Then
+
+    'create description for MobiDevice
+	Set objDevice = Description.Create
+	objDevice("micclass").Value = "MobiDevice"
+	objDevice("name").Value = "Phone Lookup"
+
+	'Create decsription for MobiEdit
+	Set objEdit = Description.Create
+	objEdit("micclass").Value = "MobiEdit"
+
+	Select Case Lcase(strScreen)
+
+	Case  "login" 
+		'Verify existence of  "Sign In" button
+		If  MobiDevice(objDevice).MobiElement("name:=Login").Exist And objTestObject.Exist Then
+				NavigateScreenOnPhoneLookupNative = True
+		End If
+
+	Case  "search" , "controls" , "settings" , "results"
+'		'Return MobiEdit objects on Homepage
+'		Set EditObjects = MobiDevice(objDevice).ChildObjects(objEdit)
+'		If EditObjects.Count = 2 Then
+'		'Set  Login Username and password
+'		EditObjects(0).Set "mobilelabs"
+'		EditObjects(1).Set "demo" 
+'		'Click SignIn button
+'		MobiDevice(objDevice).MobiButton("accessibilitylabel:=loginButton").Click
+'		Wait 1 
+
+		strPlatform = MobiDevice(objDevice).getroproperty("platform")
+			If Instr(1 , LCase(strPlatform), "ios")  > 0 OR Instr(1 , LCase(strPlatform), "iphone os")  > 0 Then
+				'Set  Username and Password
+				MobiDevice(objDevice).MobiEdit("index:=0").Set "mobilelabs"
+				wait 1
+				MobiDevice(objDevice).MobiEdit("index:=1").Set "demo"
+				wait 1
+				MobiDevice(objDevice).MobiSwitch("name:=Switch").Set eACTIVATE
+			Else
+				'Set  Username and Password
+				MobiDevice(objDevice).MobiEdit("accessibilitylabel:=Username Field").Set "mobilelabs"
+				wait 1
+				MobiDevice(objDevice).MobiEdit("accessibilitylabel:=passwordEditText").Set "demo"
+				wait 1
+				MobiDevice(objDevice).MobiEdit("accessibilitylabel:=passwordEditText").Click
+				wait 1
+				MobiDevice(objDevice).ButtonPress eBACK	
+				wait 1
+			End If
+				'Click SignIn button
+				MobiDevice(objDevice).MobiButton("name:=SignIn|SIGNIN").Click
+				Wait 1 
+				'Verify Search screen
+				'Hide device keypad in case of nativeAutomation.
+				If MobiDevice(objDevice).MobiElement("accessibilitylabel:=q|z","index:=0").Exist(3) Then
+					MobiDevice(objDevice).ButtonPress eBACK
+				wait 2
+				End If
+				If  LCase(strScreen) =  "search" Then
+					If MobiDevice(objDevice).MobiElement("name:=Search|SEARCH").Exist  And  objTestObject.Exist Then
+						NavigateScreenOnPhoneLookupNative = True
+					End If
+				'Verify Settings screen
+				ElseIf  LCase(strScreen) =  "settings"  Then
+					MobiDevice(objDevice).ButtonPress eMENU
+					wait 2
+					If MobiDevice(objDevice).MobiElement("name:= Settings").Exist   Then
+						MobiDevice(objDevice).MobiElement("name:= Settings").Click
+						MobiDevice(objDevice).RefreshObject
+						wait 4
+						If MobiDevice(objDevice).MobiElement("name:=BackgoundColor").Exist  And  objTestObject.Exist  Then
+							NavigateScreenOnPhoneLookupNative = True
+						End If
+					End If
+				ElseIf LCase(strScreen) =  "results"  Then
+'					Set objChkBox = Description.Create
+'					objChkBox("micclass").Value = "MobiCheckbox"
+'					Set arrChkbox = MobiDevice(objDevice).ChildObjects(objChkBox)
+'					'Check all checkboxes
+'					For i = o to arrChkbox.Count -1
+'						If  LCase(arrChkbox(i).GetROProperty("checked")) = "false" Then
+'							arrChkbox(i).Click
+'						End If
+'					Next
+
+					'Click on Serch button
+					MobiDevice(objDevice).MobiButton("name:=Search|SEARCH").Click
+					Wait 2
+					If  MobiDevice(objDevice).MobiElement("name:=Results|RESULTS").Exist  AND objTestObject.Exist  Then
+						NavigateScreenOnPhoneLookupNative = True
+					End If
+
+					'Verfiy Controls screen
+					ElseIf  LCase(strScreen) =  "controls"  Then 
+						MobiDevice(objDevice).ButtonPress eMENU
+						wait 2
+						If MobiDevice(objDevice).MobiElement("name:=Controls").Exist (10) Then
+							MobiDevice(objDevice).MobiElement("name:=Controls").Click
+							Wait 3
+							MobiDevice(objDevice).RefreshObject
+							wait 1
+							If MobiDevice(objDevice).MobiElement("text:=Controls|CONTROLS").Exist (10) Then
+								'Check if item selection from control list  required
+								If  strItemToSelect = ""  Then
+									'If 	MobiDevice(objDevice).MobiList("allitems:=.*ZoomControls.*").Exist  And objTestObject.Exist   Then
+									If objTestObject.Exist   Then
+										NavigateScreenOnPhoneLookupNative = True
+									End If													
+									'End If
+								Else					 
+									'Select  item from Controls list
+									ScrollToBottom objSelectFrom ,"zoomcontrols"
+									Wait 5
+									MobiDevice("micclass:=MobiDevice").MobiList("name:=List").Select  strItemToSelect 
+									MobiDevice("micclass:=MobiDevice").MobiList("name:=List").WaitProperty "visible" , False , 10000
+									'In case of datetimepicker
+									If  LCase(strItemToSelect)  = "timepicker" OR LCase(strItemToSelect) = "datepicker" Then
+										MobiDevice(objDevice).MobiButton("name:=.*Change.*").Click
+										Wait 3
+									End If
+									If objTestObject.Exist(5) Then
+										NavigateScreenOnPhoneLookupNative = True
+									End If			
+								End If
+							End If
+						End If 
+					End If
+				'End If 
+	End Select
+End If
+
+If   NavigateScreenOnPhoneLookupNative  Then
+		Reporter.ReportEvent micPass, Environment("StepName"), "Successfully navigated to " &  Environment("MobiObjectClass")  & " screen"
+		NavigateScreenOnPhoneLookupNative = True
+Else
+		strSummary = "Failed to navigate to " &  Environment("MobiObjectClass")   & " screen"
+		strActualResult = "Unable to open " &  Environment("MobiObjectClass")  & " screen"
+		Reporter.ReportEvent micFail, Environment("StepName"), strActualResult
+		'ReportFailure "Navigate item", strSummary, Environment("Component"), Environment("StepsToReproduce") , _
+	'	strActualResult, Environment("ExpectedResult")
+End If
+
+End Function
+
