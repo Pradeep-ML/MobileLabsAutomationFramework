@@ -15,7 +15,7 @@
 'Fetch values from %\MobileLabsAutomationFramework\Environment\TestSet.txt
 ReadEnvironmentVariables
 
-''product version
+'product version
 strProductVersion = Environment("buildnumber") 
 
 'Fetch product version from build
