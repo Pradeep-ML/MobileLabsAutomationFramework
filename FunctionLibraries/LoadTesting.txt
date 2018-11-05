@@ -1,14 +1,14 @@
 'Set environment variables from ALM
-Environment("dcip") = QCUtil.CurrentTestSet.Field("CY_USER_08")
-Environment("deviceorientation") = QCUtil.CurrentTestSet.Field("CY_USER_09")
-Environment("devicescale") = QCUtil.CurrentTestSet.Field("CY_USER_10")
-Environment("dcuser") = QCUtil.CurrentTestSet.Field("CY_USER_11")
-Environment("dcpassword") = QCUtil.CurrentTestSet.Field("CY_USER_12")
-Environment("osxuser") = QCUtil.CurrentTestSet.Field("CY_USER_14")
-Environment("osxpassword") = QCUtil.CurrentTestSet.Field("CY_USER_15")
-Environment("devicespermachine") = QCUtil.CurrentTestSet.Field("CY_USER_16")
-Environment("iosappname") = QCUtil.CurrentTestSetTest.Field("TC_USER_11")
-Environment("androidappname") = QCUtil.CurrentTestSetTest.Field("TC_USER_12")
+'Environment("dcip") = QCUtil.CurrentTestSet.Field("CY_USER_08")
+'Environment("deviceorientation") = QCUtil.CurrentTestSet.Field("CY_USER_09")
+'Environment("devicescale") = QCUtil.CurrentTestSet.Field("CY_USER_10")
+'Environment("dcuser") = QCUtil.CurrentTestSet.Field("CY_USER_11")
+'Environment("dcpassword") = QCUtil.CurrentTestSet.Field("CY_USER_12")
+'Environment("osxuser") = QCUtil.CurrentTestSet.Field("CY_USER_14")
+'Environment("osxpassword") = QCUtil.CurrentTestSet.Field("CY_USER_15")
+'Environment("devicespermachine") = QCUtil.CurrentTestSet.Field("CY_USER_16")
+'Environment("iosappname") = QCUtil.CurrentTestSetTest.Field("TC_USER_11")
+'Environment("androidappname") = QCUtil.CurrentTestSetTest.Field("TC_USER_12")
 
 '##########################################################################################################################
 ''@Function:		DownloadQCAttachment
