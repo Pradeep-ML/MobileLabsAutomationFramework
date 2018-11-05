@@ -1,0 +1,142 @@
+'##########################################################################################################################
+''@Function:			VerifyDesktopViewerMenuOptions
+''@Description:			Tests that the menu options in Desktop viewer are displayed correctly
+''@Return Type:			Boolean
+''@Created By:			Naveen
+''@Created On:			1-Mar-2017
+''@Modified  by :  		
+''@Modified  On : 		
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:		objTestObject 
+''@Param Type:   	Object
+''@Param Drtn: 		In
+''@Param Desc: 		The Desktop Viewer window object
+''--------------------------------------------------------------------------------------------------------------------------
+''@Param Name:  	blnDebugMenu  
+''@Param Type:   	Boolean
+''@Param Drtn: 		In
+''@Param Desc: 		If True then the function would also check the Debug menu options
+''--------------------------------------------------------------------------------------------------------------------------
+'''Example: Set objTestObject = WpfWindow("DesktopViewer")
+''			blnResult = VerifyDesktopViewerMenuOptions(objTestObject , True)
+''--------------------------------------------------------------------------------------------------------------------------   
+
+Function VerifyDesktopViewerMenuOptions(objTestObject , blnDebugMenu)   
+	On Error Resume Next
+	Reporter.Filter = rfEnableAll
+	Environment("TestStepCount")  = Environment("TestStepCount")  + 1
+	Reporter.ReportEvent micDone, Environment("StepName") & " starts", "" 
+	Environment("MobiObjectClass") = objTestObject.GetTOProperty("micclass")
+	
+	Set objMenu = objTestObject.WpfMenu("devname:=MenuMainTop","classname:=System.Windows.Controls.Menu")
+
+	strFailure = ""
+	If Not(LCase(objMenu.GetItemProperty("1;1","Label")) = "disconnect") Then
+		strFailure = strFailure & "Disconnect" & ","
+	
+	ElseIf Not(LCase(objMenu.GetItemProperty("1;2","Label")) = "button press") Then
+		strFailure = strFailure & "Button Press" & ","
+	
+	ElseIf Not(LCase(objMenu.GetItemProperty("1;3","Label")) = "exit") Then
+		strFailure = strFailure & "Exit" & ","
+	
+	ElseIf LCase(Environment("platform")) = "iphone os" Then
+		If Not(LCase(objMenu.GetItemProperty("1;2;2","Label")) = "home") Then
+			strFailure = strFailure & "Home" & ","
+		End If
+	
+	ElseIf LCase(Environment("platform")) = "androidos" Then
+		If Not(LCase(objMenu.GetItemProperty("1;2;1","Label")) = "menu") Then
+			strFailure = strFailure & "Menu" & ","
+			
+		ElseIf Not(LCase(objMenu.GetItemProperty("1;2;2","Label")) = "home") Then
+			strFailure = strFailure & "Home" & ","
+			
+		ElseIf Not(LCase(objMenu.GetItemProperty("1;2;3","Label")) = "search") Then
+			strFailure = strFailure & "Search" & ","
+			
+		ElseIf Not(LCase(objMenu.GetItemProperty("1;2;4","Label")) = "back") Then
+			strFailure = strFailure & "Back" & ","
+		End If
+	
+	ElseIf Not(LCase(objMenu.GetItemProperty("2;1","Label")) = "scale") Then
+		strFailure = strFailure & "Scale" & ","
+	
+	ElseIf Not(LCase(objMenu.GetItemProperty("2;1;1","Label")) = "100") Then
+		strFailure = strFailure & "Scale > 100" & ","
+	
+	ElseIf Not(LCase(objMenu.GetItemProperty("2;1;2","Label")) = "75") Then
+		strFailure = strFailure & "Scale > 75" & ","
+	
+	ElseIf Not(LCase(objMenu.GetItemProperty("2;1;3","Label")) = "50") Then
+		strFailure = strFailure & "Scale > 50" & ","
+	
+	ElseIf Not(LCase(objMenu.GetItemProperty("2;1;4","Label")) = "25") Then
+		strFailure = strFailure & "Scale > 25" & ","
+	
+	ElseIf Not(LCase(objMenu.GetItemProperty("2;2","Label")) = "rotate") Then
+		strFailure = strFailure & "Rotate" & ","
+	
+	ElseIf Not(LCase(objMenu.GetItemProperty("2;2;1","Label")) = "portrait") Then
+		strFailure = strFailure & "Portrait" & ","
+	
+	ElseIf Not(LCase(objMenu.GetItemProperty("2;2;2","Label")) = "upside down") Then
+		strFailure = strFailure & "Upside Down" & ","
+	
+	ElseIf Not(LCase(objMenu.GetItemProperty("2;2;3","Label")) = "landscape right") Then
+		strFailure = strFailure & "Landscape Right" & ","
+	
+	ElseIf Not(LCase(objMenu.GetItemProperty("2;2;4","Label")) = "landscape left") Then
+		strFailure = strFailure & "Landscape Left" & ","
+	
+	ElseIf Not(LCase(objMenu.GetItemProperty("2;3","Label")) = "copy image") Then
+		strFailure = strFailure & "Copy Image" & ","
+		
+	ElseIf Not(LCase(objMenu.GetItemProperty("2;4","Label")) = "hit test images") Then
+		strFailure = strFailure & "Hit Test Images" & ","
+	
+	ElseIf Not(LCase(objMenu.GetItemProperty("3;1","Label")) = "deviceviewer help") Then
+		strFailure = strFailure & "deviceViewer Help" & ","
+	
+	ElseIf Not(LCase(objMenu.GetItemProperty("3;2","Label")) = "connection information") Then
+		strFailure = strFailure & "Connection Information" & ","
+	
+	ElseIf Not(LCase(objMenu.GetItemProperty("3;3","Label")) = "save logs...") Then
+		strFailure = strFailure & "Save Logs..." & ","
+	
+	ElseIf Not(LCase(objMenu.GetItemProperty("3;4","Label")) = "save inventory...") Then
+		strFailure = strFailure & "Save Inventory..." & ","
+	
+	ElseIf Not(LCase(objMenu.GetItemProperty("3;5","Label")) = "about deviceviewer") Then
+		strFailure = strFailure & "About deviceViewer" & ","
+	
+	ElseIf blnDebugMenu Then
+		If Not(LCase(objMenu.GetItemProperty("4;1","Label")) = "view inventory") Then
+			strFailure = strFailure & "View Inventory" & ","
+		ElseIf Not(LCase(objMenu.GetItemProperty("4;2","Label")) = "toggle screen capture") Then
+			strFailure = strFailure & "Toggle Screen Capture" & ","
+		End If
+	End If
+
+	If  strFailure <> "" Then
+		strFailure = Left(strFailure,Len(strFailure)-1)
+	End If 
+
+	If  strFailure = "" Then
+		ReportStep "VerifyDesktopViewerMenuOptions" , Environment("Description") , Environment("ExpectedResult") , Environment("Pass")  , "Pass"
+		Reporter.ReportEvent micPass, Environment("Description"), Environment("Pass")
+	Else
+		ReportStep  "VerifyDesktopViewerMenuOptions" ,  Environment("Description") , Environment("ExpectedResult") , Environment("Fail") _ 
+		& Space(2)& Err.Description & "These menu items are not being displayed: " & strFailure, "Fail"
+		Reporter.ReportEvent micFail, Environment("Description"), Environment("Fail") & Space(2) & Err.Description _
+		& "These menu items are not being displayed: " & strFailure, "Fail"
+	End If
+
+	If  Environment("TestStepCount")  > Environment("ReportStepCount")  Then
+		strStatus = "Not Run"
+		ReportStep "VerifyDesktopViewerMenuOptions" , Environment("Description") , Environment("ExpectedResult") , "Not Executed"  , strStatus
+	End If
+	Reporter.ReportEvent micDone, Environment("StepName") & " ends", ""
+	Reporter.Filter = rfDisableAll
+	On Error GoTo 0
+End Function
