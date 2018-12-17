@@ -1,4 +1,4 @@
-﻿
+
 '##########################################################################################################
 ' Objective: Login to the PhoneLookup app and in the process test MobiEdit  Methods
 ' Test Description: Execute all methods for MobiEdit on Username and Password editboxes 
@@ -154,7 +154,7 @@ Environment("Description") = "Clear : Execute Clear on long text on MobiEdit."
 'Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & "." & intStep & ": " &_
 '"Execute Clear on MobiEdit." & VBNewLine
 Environment("ExpectedResult") = "Clear should clear the text within the editbox."
-blnFlag = VerifyClear(MobiDevice("PhoneLookup").MobiEdit("Username"),"withlongtext")
+blnFlag = VerifyClear(MobiDevice("PhoneLookup").MobiEdit("Username"),"Testing..~!@#$%^&*()_+{}|:<>?/.,';\][=-`0123456789")
 
 ' Step 9:  Execute Clear with text
 '#######################################################
@@ -165,18 +165,7 @@ Environment("Description") = "Clear : Execute Clear on text on MobiEdit."
 'Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & "." & intStep & ": " &_
 '"Execute Clear on MobiEdit." & VBNewLine
 Environment("ExpectedResult") = "Clear should clear the text within the editbox."
-blnFlag = VerifyClear(MobiDevice("PhoneLookup").MobiEdit("Username"),"withtext")
-
-' Step 10:  Execute Clear with no text
-'#######################################################
-
-intStep = intStep+1
-Environment("StepName") = "Step" & intStep
-Environment("Description") = "Clear : Execute Clear on no text on MobiEdit."
-'Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & "." & intStep & ": " &_
-'"Execute Clear on MobiEdit." & VBNewLine
-Environment("ExpectedResult") = "Clear should clear the text within the editbox."
-blnFlag = VerifyClear(MobiDevice("PhoneLookup").MobiEdit("Username"),"withnotext")
+blnFlag = VerifyClear(MobiDevice("PhoneLookup").MobiEdit("Username"),"text")
 
 'MobiDevice("PhoneLookup").MobiEdit("Password").Set "demo"
 

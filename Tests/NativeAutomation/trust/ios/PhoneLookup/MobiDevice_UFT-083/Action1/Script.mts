@@ -75,7 +75,7 @@ Environment("StepName") = "Step" & intStep
 Environment("Description") = "Navigate to MobiList (Control) page of PhoneLookUp App."
 'Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & ": " &_
 '"Navigate to PickerView page of PhoneLookUp App." & VBNewLine
-Environment("ExpectedResult") = "User should be navigated to UIScrollView Page"
+Environment("ExpectedResult") = "User should be navigated to MobiList (Control) Page"
 If Not MobiDevice("PhoneLookup").MobiList("lstControls").Exist(1) Then
 	LogOut
 	'Login and navigate to Controls page

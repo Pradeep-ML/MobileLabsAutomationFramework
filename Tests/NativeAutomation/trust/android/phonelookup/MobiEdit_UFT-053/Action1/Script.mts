@@ -118,35 +118,27 @@ Environment("Description") ="Verfiy child object count non-recursively"
 Environment("ExpectedResult") = "ChildObjects should return the count of children (if any) else 0"
 blnResult = VerifyChildObjects(objMobiEdit,"nonrecursive",0)
 
-'Step  : Execute Clear  on long string
-'##########################################################
-intStep = intStep+1
-Environment("StepName") = "Step" & intStep
-Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & "." & intStep & ": " &_
-"Execute Clear on MobiEdit." & VBNewLine
-Environment("Description") ="Verfiy method to clear long string"
-Environment("ExpectedResult") = "There should be no text in the Edit box"
-blnResult = VerifyClear( objMobiEdit , "withlongtext")
+' Step 8:  Execute Clear with long text
+'#######################################################
 
-'Step  : Execute Clear when no text  is visible in Edit box
-'##########################################################
 intStep = intStep+1
 Environment("StepName") = "Step" & intStep
-Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & "." & intStep & ": " &_
-"Execute Clear on MobiEdit." & VBNewLine
-Environment("Description") =" Execute Clear when no text  is visible in Edit box"
-Environment("ExpectedResult") = "There should be no text in the Edit box"
-blnResult = VerifyClear( objMobiEdit , "withnotext")
+Environment("Description") = "Clear : Execute Clear on long text on MobiEdit."
+'Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & "." & intStep & ": " &_
+'"Execute Clear on MobiEdit." & VBNewLine
+Environment("ExpectedResult") = "Clear should clear the text within the editbox."
+blnFlag = VerifyClear(objMobiEdit,"Testing..~!@#$%^&*()_+{}|:<>?/.,';\][=-`0123456789")
 
-'Step  : Execute Clear  on small  string
-'##########################################################
+' Step 9:  Execute Clear with text
+'#######################################################
+
 intStep = intStep+1
 Environment("StepName") = "Step" & intStep
-Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & "." & intStep & ": " &_
-"Execute Clear on MobiEdit." & VBNewLine
-Environment("Description") ="Verfiy method to clear small  string"
-Environment("ExpectedResult") = "There should be no text in the Edit box"
-blnResult = VerifyClear( objMobiEdit , "withtext")
+Environment("Description") = "Clear : Execute Clear on text on MobiEdit."
+'Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & "." & intStep & ": " &_
+'"Execute Clear on MobiEdit." & VBNewLine
+Environment("ExpectedResult") = "Clear should clear the text within the editbox."
+blnFlag = VerifyClear(objMobiEdit,"text")
 
 'Step  Execute Exist when object is visible
 '##########################################################

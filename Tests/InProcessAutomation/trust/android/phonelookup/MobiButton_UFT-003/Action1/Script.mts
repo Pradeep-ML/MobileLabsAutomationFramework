@@ -1,4 +1,4 @@
-﻿'##########################################################################################################
+'##########################################################################################################
 ' Objective: Login to the PhoneLookup app and in the process test MobiButton  Methods
 ' Test Description: Execute all methods for MobiButton on SignIn button control 
 'The methods are: CaptureBitmap, CheckProperty, ChildObjects, 

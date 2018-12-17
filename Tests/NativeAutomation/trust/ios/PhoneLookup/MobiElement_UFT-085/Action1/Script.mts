@@ -18,21 +18,21 @@ Environment("StepsToReproduce") = ""
 
 ' Step: Navigate to Controlrs screen
 'Expected Result: Controls screen should be displayed
-
 Environment("StepName") = "Step" & intStep
+Environment("Description") = "Navigate to Controls page of PhoneLookUp App"
 Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & ": " &_
-"Navigate to Search screen" & VBNewLine
-Environment("ExpectedResult") = "Controls screen should be displayed"
+"Navigate to Controlrs screen" & VBNewLine
+Environment("ExpectedResult") = "Controls page should be displayed"
 
 
 'Set object for Element
 Set objMobiElement = MobiDevice("PhoneLookup").MobiElement("UILabel")
 
 'Input  Parameters
-arrTOProps = Array("visible" , "text")
+arrTOProps = Array("visible" , "accessibilitylabel")
 arrTOValues = Array(True , "UILabel" )
 
-arrROProps = Array("accessibilitylabel")
+arrROProps = Array("text")
 arrROvalues = Array("UILabel")
 
 ''Call function to createreport  template 

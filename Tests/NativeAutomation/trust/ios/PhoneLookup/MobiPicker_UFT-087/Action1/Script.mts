@@ -48,14 +48,13 @@ Set objMobiPicker = MobiDevice("PhoneLookup").MobiPicker("Picker")
 intStep = intStep+1
 Environment("StepName") = "Step" & intStep
 Environment("Description") = "Navigate to UIPickerView page of PhoneLookUp App."
-'Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & ": " &_
-'"Navigate to UIPickerView page of PhoneLookUp App." & VBNewLine
+Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & ": " &_
+"Navigate to UIPickerView page of PhoneLookUp App." & VBNewLine
 Environment("ExpectedResult") = "User should be navigated to UIPickerView Page"
-
-		'Logout 
-		LogOut
-		'Login and navigate to UIPickerView page
-		strResult = LoginAndNavigateToControlsPage("UIPickerView", objMobiPicker)
+'Logout 
+	LogOut
+'Login and navigate to UIPickerView page
+	strResult = LoginAndNavigateToControlsPage("UIPickerView", objMobiPicker)
 
 '
 '###########################################################
@@ -142,7 +141,7 @@ Environment("StepName") = "Step" & intStep
 Environment("Description") = "Execute method with zero co-ordinates"
 Environment("ExpectedResult") = "Click should work correctly."
 blnResult =  VerifyClick(objMobiPicker, "withzerovalues")
-strResult = LoginAndNavigateToControlsPage("UIPickerView", objMobiPicker)
+'strResult = LoginAndNavigateToControlsPage("UIPickerView", objMobiPicker)
 
 'Step  : Execute Click without coordinates
 '##########################################################
@@ -151,7 +150,7 @@ Environment("StepName") = "Step" & intStep
 Environment("Description") = "Execute method without  co-ordinates"
 Environment("ExpectedResult") = "Click should work correctly."
 blnResult =  VerifyClick(objMobiPicker, "withoutcoords")
-strResult = LoginAndNavigateToControlsPage("UIPickerView", objMobiPicker)
+'strResult = LoginAndNavigateToControlsPage("UIPickerView", objMobiPicker)
 ''Step  : Execute Click  at negative co-ordinates
 ''##########################################################
 'intStep = intStep+1
@@ -186,9 +185,9 @@ Environment("Description") = "Execute method with any valid co-ordinates"
 Environment("ExpectedResult") = "Click should work correctly."
 blnResult =  VerifyClick(objMobiPicker, "withvalidvalue")
 
-If (MobiDevice("PhoneLookup").MobiPicker("Picker").Exist(5) = "False") Then
-   strResult = LoginAndNavigateToControlsPage("UIPickerView", objMobiPicker)
-End If
+'If (MobiDevice("PhoneLookup").MobiPicker("Picker").Exist(5) = "False") Then
+'   strResult = LoginAndNavigateToControlsPage("UIPickerView", objMobiPicker)
+'End If
 'Step  Execute Exist when object is visible
 '##########################################################
 intStep = intStep+1
@@ -624,19 +623,8 @@ Environment("ExpectedResult") = "Item should get selected"
 Environment("WheelNumber")  = 0
 blnResult = VerifySelect(objMobiPicker  , "selectstring" , "Item 300" , objBottomWheelZero)
 
-
-
-'End test iteration
-EndTestIteration()
-
-
-
-
-
-
-
-
-
+' End test iteration
+' EndTestIteration()
 
 
 ''##########################################################################################################
@@ -1281,9 +1269,8 @@ EndTestIteration()
 'Environment("WheelNumber")  = 0
 'blnResult = VerifySelect(objMobiPicker  , "selectstring" , "Item 300" , objBottomWheelZero)
 '
-'
-'
-''End test iteration
-'EndTestIteration()
+
+'End test iteration
+EndTestIteration()
 
 

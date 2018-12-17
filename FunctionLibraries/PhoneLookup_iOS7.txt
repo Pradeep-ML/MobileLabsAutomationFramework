@@ -39,6 +39,7 @@ Function  LoginAndNavigateToControlsPage (strObjItem , objTestObject)
 	blnCheck = True
 	If strObjItem = "" Then
 		blnCheck = False
+		strObjItem = "Controls"
 	End If
 
 	'Setting initial flag value
@@ -55,21 +56,22 @@ Function  LoginAndNavigateToControlsPage (strObjItem , objTestObject)
 		'Verify Sign In
 '		If  MobiDevice(objDevice).MobiButton("name:=Logout").Exist(1) AND MobiDevice(objDevice).MobiImage("name:=.*.search.*png").Exist(1) Then
 		If  blnFlag  Then
-			wait 3
+			wait 2
 			'Click on Controls image
 			selectMenuOption("Controls")
 '			If MobiDevice(objDevice).MobiList("allitems:=.*UIActivityIndicatorView.*").Exist(5) Then
 			If MobiDevice("PhoneLookup").MobiList("lstControls").Exist(5) and MobiDevice("PhoneLookup").MobiButton("Logout").Exist(5) then
 				Flag = True
-               wait 4
+               wait 2
 
 				If  blnCheck  Then
 					'Select  item  from the list
 					MobiDevice("PhoneLookup").MobiList("lstControls").Select strObjItem
-					If Not objTestObject.Exist(15) Then
+					wait 2
+					If Not objTestObject.Exist(5) Then
 					MobiDevice("PhoneLookup").MobiList("lstControls").Select strObjItem
 					End If
-					wait 4
+					wait 2
 				End If
 			End If			
 		End If 
@@ -77,14 +79,22 @@ Function  LoginAndNavigateToControlsPage (strObjItem , objTestObject)
 	End If 
 
 	'Verfiy existence of Page
-	If objTestObject.Exist(15) OR Flag Then		
-			Reporter.ReportEvent micPass, Environment("StepName"), "Successfully navigated to " & Environment("MobiObjectClass") & "  item"
-			LoginAndNavigateToControlsPage = True
-	Else
-			strSummary = "Failed to navigate to " & Environment("MobiObjectClass")  & " item"
-			strActualResult = "Unable to open " & Environment("MobiObjectClass") & " item"
-			Reporter.ReportEvent micFail, Environment("StepName"), strActualResult
-			ExitTest
+	Environment("Pass") = "User successfully navigated to "& strObjItem &" Page"
+	Environment("Fail") =  "User failed to navigate to "& strObjItem &" Page"
+	
+	If objTestObject.Exist(5) AND Flag Then
+		LoginAndNavigateToControlsPage = True
+		ReportStep "Navigation" , Environment("Description") , Environment("ExpectedResult") , Environment("Pass")  , "Pass"
+	Else 
+		strActualResult = "Unable to open " & Environment("MobiObjectClass") & " item"
+		ReportStep "Navigation" , Environment("Description") , Environment("ExpectedResult") , Environment("Fail")  &Space(2)& Err.Description , "Fail"
+		ExitTest
+	End If
+	
+	
+	If  Environment("TestStepCount")  > Environment("ReportStepCount")  Then
+			strStatus = "Not Run"
+			ReportStep "Navigation" , Environment("Description") , Environment("ExpectedResult") , "Not Executed"  , strStatus
 	End If
 
 	Set objDevice = Nothing
@@ -844,7 +854,108 @@ End If
 End If
 End Function
 
+Function ReportStep( strMethodName, strStepDesc, strExpectedResult, strActualResult, strStatus)
 
+	On Error Resume Next
+	strStartTime = Now()
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	Environment("ReportStepCount") = Environment("ReportStepCount") + 1
+	'Environment("Status")  = strStatus
+	'@open report file in append mode
+	strTextFile = Environment("ReportPath")
+	Set objFile = objFSO.OpenTextFile( strTextFile , 8, true)
+
+	'@write test result on report file
+	If  Not dicMethod.Exists(strMethodName) Then
+		    Environment("intSubStep") =   1
+			intStepCount   = Environment("intStepNo") + 1
+			intStep  =  intStepCount  &".0" & Environment("intSubStep")
+			Environment("intStepNo") = intStepCount
+			Environment("intSubStep")   = Environment("intSubStep")  + 1
+	Else
+			intStep =  Environment("intStepNo")  &".0" & Environment("intSubStep")
+			Environment("intSubStep") = Environment("intSubStep")  + 1
+	End If
+
+	objFile.WriteLine("<TR>")
+	objFile.WriteLine("<td class='tdborder_1'  align='center'>" &  intStep   & "</td>")
+	objFile.WriteLine("<td class='tdborder_1'  align='center'>" &  strMethodName   & "</td>")
+	objFile.WriteLine("<td class ='tdborder_1'>"  &  strStepDesc  &  "</td>")
+	objFile.WriteLine("<td class ='tdborder_1'>"  &  strExpectedResult  & "</td>")
+
+
+'###################################################################################################
+	If Not dicMethod.Exists(strMethodName) Then
+		dicMethod.Add strMethodName, strStatus
+	Else
+		If LCase(strStatus) = "fail" Then
+			dicMethod(strMethodName) = "Fail"
+		End If
+	End If
+
+
+'##################################################################################################
+	If  Not MobiDevice("micclass:=MobiDevice").Exist(4) Then
+		strActualResult = "VIEWER CRASHED OR STOPPED RESPONDING HENCE EXITING TEST -->"&Environment("TestName")
+     	sSscreenshotFile = Environment("ScreenshotPath") & "\" & Environment("TestName") + "_"  & Replace(Date,"/","_") & "_" & Hour(Now) & "_" & Minute(Now) & "_" & Second(Now) & ".bmp"
+       Window("regexpwndtitle:=deviceViewer").CaptureBitmap sSscreenshotFile ,True
+		sSscreenshotFile = Replace(sSscreenshotFile , Environment("ScreenshotPath")  , "ErrorScreenShots")
+    	strStatus  = "Not Run"
+		objFile.WriteLine("<td class ='tdborder_1'>" &  strActualResult   & "<br><a href = " & sSscreenshotFile & "> Click here for screenshot</a></td> ")
+		objFile.WriteLine("<td  class ='tdborder_1_Fail' width ='20%' align='center'>"  &  strStatus  & " </td>")
+		Environment("intNotRun") = Environment("intNotRun") + 1
+		EndTestIteration
+    	'ExitTest
+	End If
+'################################################################################################
+      
+	If Instr(1 , Lcase(strStatus)  , "fail") > 0 Then
+		sSscreenshotFile = Environment("ScreenshotPath") & "\" & Environment("TestName") + "_"  & Replace(Date,"/","_") & "_" & Hour(Now) & "_" & Minute(Now) & "_" & Second(Now) & ".bmp"
+		Mobidevice("micclass:=MobiDevice").CaptureBitmap sSscreenshotFile,True
+		sSscreenshotFile = Replace(sSscreenshotFile , Environment("ScreenshotPath")  , "ErrorScreenShots")
+		objFile.WriteLine("<td class ='tdborder_1'>" &  strActualResult   & "<br><a href = " & sSscreenshotFile & "> Click here for screenshot</a></td> ")
+		objFile.WriteLine("<td  class ='tdborder_1_Fail' width ='20%' align='center'>"  &  strStatus  & " </td>")
+	ElseIf  Instr(1 , Lcase(strStatus)  , "pass") > 0 Then
+		objFile.WriteLine("<td class ='tdborder_1'>" &  strActualResult  &  "</td> ")
+		objFile.WriteLine("<td  class ='tdborder_1_Pass' width ='20%' align='center'>"  &  strStatus  &  "</td>")
+	Else 
+	    objFile.WriteLine("<td class ='tdborder_1'>" &  strActualResult  &  "</td> ")
+		objFile.WriteLine("<td  class ='tdborder_1_Pass' width ='20%' align='center'>"  &  strStatus  &  "</td>")
+	End If
+	'End If
+	objFile.WriteLine("</TR>")
+
+	If  LCase(strStatus)  = "pass"  Then
+			Environment("intPassCount") =  Environment("intPassCount")  + 1
+	ElseIf   LCase(strStatus) = "fail"  Then
+			Environment("intFailCount")  = Environment("intFailCount")   + 1
+	Else 
+			Environment("intNotRun")  =  Environment("intNotRun")+ 1
+	End If
+
+	objFile.Close
+	Set objFSO = nothing
+
+		'Execution time of a testcase
+
+	TotalTime_Secs  = Datediff("s", strStartTime  ,Now ())
+
+	intStepTime  = FormatDateTime(Int(TotalTime_Secs/3600) & ":" & Int((TotalTime_Secs Mod 3600)/60),4) & ":" & Int(TotalTime_Secs Mod 60)
+	
+DataTable.Value("strStepDescription" , "Report Step Values" )= strStepDesc
+DataTable.Value("strExpectedResult" , "Report Step Values" )= strExpectedResult
+DataTable.Value("strActualResult" , "Report Step Values" )= strActualResult 
+DataTable.Value("strStatus" , "Report Step Values" )= strStatus
+DataTable.Value("strTestExecutionTime" , "Report Step Values" )= intStepTime
+DataTable.Value("strMethodname" , "Report Step Values" ) = strMethodName
+DataTable.Value("strCaseID" , "Report Step Values" ) =  Environment("intSubStep")
+DataTable.Value("strScenarioID" , "Report Step Values" )=  Environment("intStepNo") 
+
+
+	'Set myCurentRun = nothing
+	Err.Clear
+	On Error GoTo 0
+End Function
 
 
 

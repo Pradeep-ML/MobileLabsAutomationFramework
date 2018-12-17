@@ -18,20 +18,19 @@ Environment("Component") = "PhoneLookup_ObjectBased"
 Environment("StepsToReproduce") = ""
 
 '#######################################################
+'Create an html report template
+CreateReportTemplate()
 
-' Step1: Navigate to Search screen
-'Expected Result: Search screen should be displayed
+' Step1: Navigate to SegmentControl screen
 intStep = intStep+1
 Environment("StepName") = "Step" & intStep
+Environment("Description") = "Navigate to UISegmentedControl screen"
 Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & ": " &_
 "Verify Login Screen" & VBNewLine
-Environment("ExpectedResult") = "Login Screen should be displayed"
+Environment("ExpectedResult") = "User should be navigated to UISegmentedControl Page"
 
 'Set object for Button
 Set objMobiSegment = MobiDevice("PhoneLookup").MobiSegment("Segment")
-
-'Call function to createreporttemplare
-CreateReportTemplate()
 
 'Call navigate to screen function 
 strResult  = LoginAndNavigateToControlsPage("UISegmentedControl" , objMobiSegment)

@@ -3568,8 +3568,7 @@ End Function
 ''  Set  objTestObject  = MobiDevice("Device name").MobiEdit("objEdit")
 '' Example     VerifyClear  objTestObject
 ''--------------------------------------------------------------------------------------------------------------------------
-
-Function VerifyClear(objTestObject, strCase)
+Function VerifyClear(objTestObject, strText)
 
 	On Error Resume Next
     Environment("TestStepCount")  = Environment("TestStepCount")  + 1
@@ -3578,61 +3577,35 @@ Function VerifyClear(objTestObject, strCase)
 
 	Environment("MobiObjectClass") = objTestObject.GetTOProperty("micclass")
 	VerifyClear = False
-
-	Select Case Lcase(strCase)
-		Case "withlongtext"
-			'Text to be set in object
-			strText = "Testing..~!@#$%^&*()_+{}|:<>?/.,';\][=-`0123456789"
-
-			'Set Text in Edit Field
-			objTestObject.Set strText
-			objTestObject.RefreshObject
-			Wait 1
-			'Clear text
-			objTestObject.Clear
-			wait 3
-			Mobidevice("micclass:=MobiDevice").Sync
-
-		Case "withtext"
-			'Text to be set in object
-			strText = "text"
-
-			'Set Text in Edit Field
-			objTestObject.Set strText
-			objTestObject.RefreshObject
-			Wait 1
-			'Clear text
-			objTestObject.Clear
-			wait 3
-			Mobidevice("micclass:=MobiDevice").Sync
-
-		Case "withnotext"
-			'Clear text
-			objTestObject.Clear
-			Wait 3
-			If Len(objTestObject.GetROProperty("text")) = 0 Then
-				'Clear text
-				objTestObject.Clear
-				Wait 3
-			End If
-	End Select
-
-	If Len(objTestObject.GetROProperty("text")) = 0 OR objTestObject.GetROProperty("text") = "Enter Username" AND Len(Err.Description ) = 0 Then
-		VerifyClear = True
-		ReportStep "Clear" , Environment("Description") , Environment("ExpectedResult") , "Clear removed complete text" , "Pass"
-		Reporter.ReportEvent micPass , Environment("Description") , "Clear removed complete text"
-
-	Else
-		ReportStep "Clear" ,  Environment("Description") , Environment("ExpectedResult") , "Clear didn't removed complete text. The displayed text after executing Clear is: " & objTestObject.GetROProperty("text")&Space(2) &Err.Description , "Fail"
-		Reporter.ReportEvent micFail , Environment("Description") , "Clear removed complete text" &Space(2)&Err.Description
+	objTestObject.Set strText
+    objTestObject.RefreshObject
+    Wait 3
+    If Len(objTestObject.GetROProperty("text")) = 0 Then
+       ReportStep "Clear" ,  Environment("Description") , Environment("ExpectedResult") , "No text was set in edit box before calling Clear" &Err.Description ,"Fail"
+	   Reporter.ReportEvent micFail , Environment("Description") , "Clear removed complete text" &Space(2)&Err.Description
+    Else 
+	   'Clear text
+	    objTestObject.Clear
+	    wait 3
+		Mobidevice("micclass:=MobiDevice").Sync
+		If Len(objTestObject.GetROProperty("text")) = 0 OR objTestObject.GetROProperty("text") = "Enter Username" AND Len(Err.Description ) = 0 Then
+			VerifyClear = True
+			ReportStep "Clear" , Environment("Description") , Environment("ExpectedResult") , "Clear removed complete text" , "Pass"
+			Reporter.ReportEvent micPass , Environment("Description") , "Clear removed complete text"
+        Else
+			ReportStep "Clear" ,  Environment("Description") , Environment("ExpectedResult") , "Clear didn't removed complete text. The displayed text after executing Clear is: " &_
+			objTestObject.GetROProperty("text")&Space(2) &Err.Description , "Fail"
+			Reporter.ReportEvent micFail , Environment("Description") , "Clear didn't removed complete text" &Space(2)&Err.Description
+        End If	
 	End If
+	
 	Reporter.ReportEvent micDone, Environment("StepName") & " ends", ""
 	Reporter.Filter = rfDisableAll
     If  Environment("TestStepCount")  > Environment("ReportStepCount")  Then
 			strStatus = "Not Run"
 			ReportStep "Clear" , Environment("Description") , Environment("ExpectedResult") , "Not Executed"  , strStatus
 	End If
-		On Error GoTo 0
+    On Error GoTo 0
 End Function
 	
 	
@@ -5430,10 +5403,13 @@ Function FetchHeaderElement
 		
 		For j = 0 To UBound(arrObjNum)
 			If j < UBound(arrObjNum) Then
-				If arrObjNum(j+1) < arrObjNum(intMin) Then
+				'Ignore y values that are 0
+				If (arrObjNum(j+1) < arrObjNum(intMin)) AND (arrObjNum(j+1) > 10 AND arrObjNum(intMin) > 10)  Then
 					intMin = j+1
 					strMin = intMin
-				ElseIf arrObjNum(j+1) = arrObjNum(intMin) Then
+				ElseIf (arrObjNum(j+1) > arrObjNum(intMin)) AND (arrObjNum(j+1) > 10 AND arrObjNum(intMin) > 10) Then
+					strMin = intMin
+				ElseIf (arrObjNum(j+1) = arrObjNum(intMin)) AND (arrObjNum(j+1) > 10 AND arrObjNum(intMin) > 10) Then
 					strMin = strMin & "," & j+1
 				End If
 			End If

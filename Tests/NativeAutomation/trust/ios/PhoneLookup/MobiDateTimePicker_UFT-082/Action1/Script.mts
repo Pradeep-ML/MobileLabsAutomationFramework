@@ -36,7 +36,10 @@ CreateReportTemplate()
 ' Step: Navigate to UIDatePicker Screen
 'Expected Result: UIDatePicker screen should be displayed
 Environment("StepName") = "Step" & intStep
-Environment("ExpectedResult") = "DateTimePicker screen should be displayed"
+Environment("Description") = "Navigate to UIDateTimePicker page of PhoneLookUp App."
+Environment("StepsToReproduce") = Environment("StepsToReproduce") & Environment("StepName") & ": " &_
+"Navigate to UIDateTimePicker page of PhoneLookUp App." & VBNewLine
+Environment("ExpectedResult") = "UIDateTimePicker page should be displayed"
 
 'Set object for UI Picker
 Set objMobiDateTimePicker = MobiDevice("PhoneLookup").MobiDatetimePicker("DatetimePicker")
